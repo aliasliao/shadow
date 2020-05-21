@@ -38,43 +38,63 @@ type SS struct {
 }
 
 func safeDecode(raw []byte) []byte {
-	bytes := make([]byte, base64.StdEncoding.DecodedLen(len(raw)))
-	_, err := base64.StdEncoding.Decode(bytes, raw)
+	ret := make([]byte, 0)
+	safeLen := len(raw) - len(raw)%4
+	safe, rest := raw[0:safeLen], raw[safeLen:]
+	decodedSafe, err := base64.StdEncoding.DecodeString(string(safe))
 	if err != nil {
-		fmt.Println("warning", err)
+		fmt.Println("[warning]", err)
 	}
-	return bytes
+
+	var decodeMap [256]uint32
+	for i := 0; i < len(decodeMap); i++ {
+		decodeMap[i] = 0xFF
+	}
+	encoder := "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/"
+	for i := 0; i < len(encoder); i++ {
+		decodeMap[encoder[i]] = uint32(i)
+	}
+
+	var bin uint32 = 0
+	for _, b := range rest {
+		bin = bin<<6 | decodeMap[b]
+	}
+	// TODO
+	ret = append(ret, decodedSafe...)
+	return ret
 }
 
-func getSSR(url string, cache bool) (string, error) {
+func decodeLink(link string) *SSR {
+	return &SSR{}
+}
+
+func getSSR(url string, cache bool) ([]*SSR, error) {
 	var raw []byte
 	CacheFile := os.TempDir() + "/" + base64.RawStdEncoding.EncodeToString([]byte(url))
 	if _, err := os.Stat(CacheFile); cache && !os.IsNotExist(err) {
-		fmt.Println("Read from cache...")
+		fmt.Println("Loading from cache...")
 		raw, _ = ioutil.ReadFile(CacheFile)
 	} else {
+		fmt.Println("Loading from web...")
 		res, err := (&http.Client{Timeout: 10 * time.Second}).Get(url)
 		if err != nil {
-			return "", err
+			return nil, err
 		}
 		defer res.Body.Close()
 		raw, _ = ioutil.ReadAll(res.Body)
 		ioutil.WriteFile(CacheFile, raw, 0755)
 	}
-	fmt.Printf("len(raw) = %d, cache file = %s\n", len(raw), CacheFile)
 	links := strings.Split(string(safeDecode(raw)), "\n")
-	decodedLinks := make([]string, 0)
+	res := make([]*SSR, 0)
 	for _, link := range links {
-		decodedLinks = append(decodedLinks, string(safeDecode([]byte(link[6:]))))
+		res = append(res, decodeLink(link))
 	}
-	fmt.Println(decodedLinks)
 
+	return res, nil
 	//// ssr://120.232.150.53:65533:auth_aes128_md5:chacha20-ietf:tls1.2_ticket_auth:cXdlcnQ/?obfsparam=ZTIwMDgyNzUzOS5kb3dubG9hZC53aW5kb3dzdXBkYXRlLmNvbQ&protoparam=Mjc1Mzk6RGJ5bko3MA&remarks=VFcgQSAt5Y6f55SfSVAgQFREIC0gMjAwTQ&group=WWFoYWhhLUxU
 	//ssrs := make([]*SSR, 0)
 	//for _, decodedLink := range decodedLinks {
 	//    ssr := &SSR{}
 	//    re := regexp.MustCompile(`^([^:]+):([^:]+):([^:]+):([^:]+):([^:]+):([^:]+)/?(\S*)$`)
 	//}
-
-	return string(raw), nil
 }
