@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"os"
+	"regexp"
 	"strings"
 	"time"
 )
@@ -38,7 +39,7 @@ type SS struct {
 }
 
 func safeDecode(raw []byte) []byte {
-	ret := make([]byte, 0)
+	var ret []byte
 	safeLen := len(raw) - len(raw)%4
 	safe, rest := raw[0:safeLen], raw[safeLen:]
 	decodedSafe, err := base64.StdEncoding.DecodeString(string(safe))
@@ -46,25 +47,33 @@ func safeDecode(raw []byte) []byte {
 		fmt.Println("[warning]", err)
 	}
 
-	var decodeMap [256]uint32
+	var decodeMap [256]uint8
 	for i := 0; i < len(decodeMap); i++ {
 		decodeMap[i] = 0xFF
 	}
 	encoder := "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/"
 	for i := 0; i < len(encoder); i++ {
-		decodeMap[encoder[i]] = uint32(i)
+		decodeMap[encoder[i]] = uint8(i)
 	}
 
 	var bin uint32 = 0
 	for _, b := range rest {
-		bin = bin<<6 | decodeMap[b]
+		bin = bin<<6 | uint32(decodeMap[b])
 	}
-	// TODO
+	bin = bin >> (len(rest) * 6 % 8)
+	var decodedRest []byte
+	for bin > 0 {
+		decodedRest = append([]byte{uint8(bin & 0xFF)}, decodedRest...)
+		bin = bin >> 8
+	}
+
 	ret = append(ret, decodedSafe...)
+	ret = append(ret, decodedRest...)
 	return ret
 }
 
 func decodeLink(link string) *SSR {
+	fmt.Printf("[link] %s\n", link)
 	return &SSR{}
 }
 
@@ -84,17 +93,18 @@ func getSSR(url string, cache bool) ([]*SSR, error) {
 		raw, _ = ioutil.ReadAll(res.Body)
 		ioutil.WriteFile(CacheFile, raw, 0755)
 	}
-	links := strings.Split(string(safeDecode(raw)), "\n")
-	res := make([]*SSR, 0)
+	links := strings.Split(strings.TrimSpace(string(safeDecode(raw))), "\n")
+	var res []*SSR
 	for _, link := range links {
-		res = append(res, decodeLink(link))
+		decodedLink := regexp.MustCompile(`[^/]+$`).ReplaceAllStringFunc(link, func(s string) string {
+			var decodedHalf []string
+			for _, half := range strings.Split(s, "_") {
+				decodedHalf = append(decodedHalf, string(safeDecode([]byte(half))))
+			}
+			return strings.Join(decodedHalf, "?")
+		})
+		res = append(res, decodeLink(decodedLink))
 	}
 
 	return res, nil
-	//// ssr://120.232.150.53:65533:auth_aes128_md5:chacha20-ietf:tls1.2_ticket_auth:cXdlcnQ/?obfsparam=ZTIwMDgyNzUzOS5kb3dubG9hZC53aW5kb3dzdXBkYXRlLmNvbQ&protoparam=Mjc1Mzk6RGJ5bko3MA&remarks=VFcgQSAt5Y6f55SfSVAgQFREIC0gMjAwTQ&group=WWFoYWhhLUxU
-	//ssrs := make([]*SSR, 0)
-	//for _, decodedLink := range decodedLinks {
-	//    ssr := &SSR{}
-	//    re := regexp.MustCompile(`^([^:]+):([^:]+):([^:]+):([^:]+):([^:]+):([^:]+)/?(\S*)$`)
-	//}
 }
