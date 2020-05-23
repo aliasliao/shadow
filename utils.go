@@ -2,39 +2,44 @@ package main
 
 import (
 	"encoding/base64"
-	"fmt"
+	"errors"
 	"io/ioutil"
+	"log"
 	"net/http"
+	"net/url"
 	"os"
 	"regexp"
+	"strconv"
 	"strings"
 	"time"
 )
 
 type SSR struct {
 	server        string
-	serverPort    int
+	serverPort    uint16
 	localAddress  string
-	localPort     int
-	timeout       int
-	workers       int
+	localPort     uint16
+	timeout       uint16
+	workers       uint16
 	password      string
-	method        string // TODO
-	obfs          string // TODO
+	method        string // TODO enum
+	obfs          string // TODO enum
 	obfsParam     string
-	protocol      string // TODO
+	protocol      string // TODO enum
 	protocolParam string
+	group         string
+	remarks       string
 }
 
 type SS struct {
 	server       string
-	serverPort   int
+	serverPort   uint16
 	localAddress string
-	localPort    int
-	timeout      int
-	workers      int
+	localPort    uint16
+	timeout      uint16
+	workers      uint16
 	password     string
-	method       string // TODO
+	method       string // TODO enum
 	plugin       string
 }
 
@@ -44,7 +49,7 @@ func safeDecode(raw []byte) []byte {
 	safe, rest := raw[0:safeLen], raw[safeLen:]
 	decodedSafe, err := base64.StdEncoding.DecodeString(string(safe))
 	if err != nil {
-		fmt.Println("[warning]", err)
+		log.Println("[warning]", err)
 	}
 
 	var decodeMap [256]uint8
@@ -72,19 +77,66 @@ func safeDecode(raw []byte) []byte {
 	return ret
 }
 
-func decodeLink(link string) *SSR {
-	fmt.Printf("[link] %s\n", link)
-	return &SSR{}
+func safeDecodeStr(raw string) string {
+	return string(safeDecode([]byte(raw)))
+}
+
+func decodeLink(link string) (*SSR, error) {
+	decodedLink := regexp.MustCompile(`[^/]+$`).ReplaceAllStringFunc(link, func(s string) string {
+		var decodedHalf []string
+		for _, half := range strings.Split(s, "_") {
+			decodedHalf = append(decodedHalf, safeDecodeStr(half))
+		}
+		return strings.Join(decodedHalf, "?")
+	})
+	re := regexp.MustCompile(`ssr://(?P<server>[^:]+):(?P<serverPort>[^:]+):(?P<protocol>[^:]+):(?P<method>[^:]+):(?P<obfs>[^:]+):(?P<password>[^:]+?)/\?(?P<queries>[\S]+)$`)
+	keys := re.SubexpNames()
+	values := re.FindStringSubmatch(decodedLink)
+	if values == nil {
+		return nil, errors.New("unsupported format")
+	}
+	captured := map[string]string{}
+	for index, key := range keys {
+		captured[key] = values[index]
+	}
+	queries, err := url.ParseQuery(captured["queries"])
+	if err != nil {
+		return nil, err
+	}
+	for key, value := range queries {
+		captured[key] = value[0]
+	}
+	serverPort, err := strconv.ParseUint(captured["serverPort"], 10, 16)
+	if err != nil {
+		return nil, err
+	}
+
+	return &SSR{
+		server:        captured["server"],
+		serverPort:    uint16(serverPort),
+		localAddress:  "",
+		localPort:     0,
+		timeout:       0,
+		workers:       0,
+		password:      safeDecodeStr(captured["password"]),
+		method:        captured["method"],
+		obfs:          captured["obfs"],
+		obfsParam:     safeDecodeStr(captured["obfsparam"]),
+		protocol:      captured["protocol"],
+		protocolParam: safeDecodeStr(captured["protoparam"]),
+		group:         safeDecodeStr(captured["group"]),
+		remarks:       safeDecodeStr(captured["remarks"]),
+	}, nil
 }
 
 func getSSR(url string, cache bool) ([]*SSR, error) {
 	var raw []byte
 	CacheFile := os.TempDir() + "/" + base64.RawStdEncoding.EncodeToString([]byte(url))
 	if _, err := os.Stat(CacheFile); cache && !os.IsNotExist(err) {
-		fmt.Println("Loading from cache...")
+		log.Println("Loading from cache...")
 		raw, _ = ioutil.ReadFile(CacheFile)
 	} else {
-		fmt.Println("Loading from web...")
+		log.Println("Loading from web...")
 		res, err := (&http.Client{Timeout: 10 * time.Second}).Get(url)
 		if err != nil {
 			return nil, err
@@ -96,14 +148,12 @@ func getSSR(url string, cache bool) ([]*SSR, error) {
 	links := strings.Split(strings.TrimSpace(string(safeDecode(raw))), "\n")
 	var res []*SSR
 	for _, link := range links {
-		decodedLink := regexp.MustCompile(`[^/]+$`).ReplaceAllStringFunc(link, func(s string) string {
-			var decodedHalf []string
-			for _, half := range strings.Split(s, "_") {
-				decodedHalf = append(decodedHalf, string(safeDecode([]byte(half))))
-			}
-			return strings.Join(decodedHalf, "?")
-		})
-		res = append(res, decodeLink(decodedLink))
+		ssr, err := decodeLink(link)
+		if err != nil {
+			log.Println("[warning]", err)
+			continue
+		}
+		res = append(res, ssr)
 	}
 
 	return res, nil
