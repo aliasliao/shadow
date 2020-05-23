@@ -38,6 +38,8 @@ func TestDecodeLink(t *testing.T) {
 		obfsParam:     safeDecodeStr("ZTIwMDgyNzUzOS5kb3dubG9hZC53aW5kb3dzdXBkYXRlLmNvbQ"),
 		protocol:      "auth_aes128_md5",
 		protocolParam: safeDecodeStr("Mjc1Mzk6RGJ5bko3MA"),
+		group:         safeDecodeStr("WWFoYWhhLUxURA"),
+		remarks:       safeDecodeStr("SEsgRiAtIDFHYnBz"),
 	}
 	output, err := decodeLink(input)
 	if err != nil {

@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/base64"
 	"errors"
+	"fmt"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -47,16 +48,17 @@ func safeDecode(raw []byte) []byte {
 	var ret []byte
 	safeLen := len(raw) - len(raw)%4
 	safe, rest := raw[0:safeLen], raw[safeLen:]
-	decodedSafe, err := base64.StdEncoding.DecodeString(string(safe))
+	decodedSafe, err := base64.URLEncoding.DecodeString(string(safe))
 	if err != nil {
-		log.Println("[warning]", err)
+		log.Println("[warning](base64 error)", err)
+		log.Println("        ", string(raw))
 	}
 
 	var decodeMap [256]uint8
 	for i := 0; i < len(decodeMap); i++ {
 		decodeMap[i] = 0xFF
 	}
-	encoder := "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/"
+	encoder := "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_"
 	for i := 0; i < len(encoder); i++ {
 		decodeMap[encoder[i]] = uint8(i)
 	}
@@ -93,7 +95,7 @@ func decodeLink(link string) (*SSR, error) {
 	keys := re.SubexpNames()
 	values := re.FindStringSubmatch(decodedLink)
 	if values == nil {
-		return nil, errors.New("unsupported format")
+		return nil, errors.New(fmt.Sprintf("unsupported format (%s)", decodedLink))
 	}
 	captured := map[string]string{}
 	for index, key := range keys {
@@ -131,7 +133,7 @@ func decodeLink(link string) (*SSR, error) {
 
 func getSSR(url string, cache bool) ([]*SSR, error) {
 	var raw []byte
-	CacheFile := os.TempDir() + "/" + base64.RawStdEncoding.EncodeToString([]byte(url))
+	CacheFile := os.TempDir() + "/" + base64.RawURLEncoding.EncodeToString([]byte(url))
 	if _, err := os.Stat(CacheFile); cache && !os.IsNotExist(err) {
 		log.Println("Loading from cache...")
 		raw, _ = ioutil.ReadFile(CacheFile)
@@ -150,7 +152,7 @@ func getSSR(url string, cache bool) ([]*SSR, error) {
 	for _, link := range links {
 		ssr, err := decodeLink(link)
 		if err != nil {
-			log.Println("[warning]", err)
+			log.Println("[warning](bad link skipped)", err)
 			continue
 		}
 		res = append(res, ssr)
