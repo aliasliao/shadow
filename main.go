@@ -1,13 +1,29 @@
 package main
 
-import "fmt"
+import (
+	"flag"
+	"log"
+)
 
+// shadow -type ss -origin https://example.com -cache
 func main() {
-	ySSR := "http://sub.yahaha.pro/link/TF1WoRrrADeyTYTu?mu=0"
-	ssrs, err := getSSR(ySSR, true)
-	if err != nil {
-		fmt.Println("error:", err)
-		return
+	originType := flag.String("type", "ss", `type of the origin, can be "ss" or "ssr"`)
+	origin := flag.String("origin", "", `origin url`)
+	cache := flag.Bool("cache", false, `whether to load data from cache file`)
+	flag.Parse()
+	if *originType == "ss" {
+		res, err := getSSD(*origin, *cache)
+		if err != nil {
+			log.Fatalln("error:", err)
+		}
+		log.Println("total:", len(res))
+	} else if *originType == "ssr" {
+		res, err := getSSR(*origin, *cache)
+		if err != nil {
+			log.Fatalln("error:", err)
+		}
+		log.Println("total:", len(res))
+	} else {
+		log.Fatalln("wrong type")
 	}
-	fmt.Println("total:", len(ssrs))
 }

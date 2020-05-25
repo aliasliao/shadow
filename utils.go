@@ -51,7 +51,7 @@ func safeDecode(raw []byte) []byte {
 	decodedSafe, err := base64.URLEncoding.DecodeString(string(safe))
 	if err != nil {
 		log.Println("[warning](base64 error)", err)
-		log.Println("        ", string(raw))
+		log.Println("raw---->", string(raw))
 	}
 
 	var decodeMap [256]uint8
@@ -131,7 +131,7 @@ func decodeLink(link string) (*SSR, error) {
 	}, nil
 }
 
-func getSSR(url string, cache bool) ([]*SSR, error) {
+func loadRaw(url string, cache bool) ([]byte, error) {
 	var raw []byte
 	CacheFile := os.TempDir() + "/" + base64.RawURLEncoding.EncodeToString([]byte(url))
 	if _, err := os.Stat(CacheFile); cache && !os.IsNotExist(err) {
@@ -139,13 +139,21 @@ func getSSR(url string, cache bool) ([]*SSR, error) {
 		raw, _ = ioutil.ReadFile(CacheFile)
 	} else {
 		log.Println("Loading from web...")
-		res, err := (&http.Client{Timeout: 10 * time.Second}).Get(url)
+		res, err := (&http.Client{Timeout: 20 * time.Second}).Get(url)
 		if err != nil {
 			return nil, err
 		}
 		defer res.Body.Close()
 		raw, _ = ioutil.ReadAll(res.Body)
 		ioutil.WriteFile(CacheFile, raw, 0755)
+	}
+	return raw, nil
+}
+
+func getSSR(url string, cache bool) ([]*SSR, error) {
+	raw, err := loadRaw(url, cache)
+	if err != nil {
+		return nil, err
 	}
 	links := strings.Split(strings.TrimSpace(string(safeDecode(raw))), "\n")
 	var res []*SSR
@@ -159,4 +167,13 @@ func getSSR(url string, cache bool) ([]*SSR, error) {
 	}
 
 	return res, nil
+}
+
+func getSSD(url string, cache bool) ([]*SS, error) {
+	raw, err := loadRaw(url, cache)
+	if err != nil {
+		return nil, err
+	}
+	log.Println("raw", string(raw), "\n---\n", safeDecodeStr(string(raw)))
+	return nil, nil
 }
