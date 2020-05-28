@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/base64"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"io/ioutil"
@@ -83,7 +84,7 @@ func safeDecodeStr(raw string) string {
 	return string(safeDecode([]byte(raw)))
 }
 
-func decodeLink(link string) (*SSR, error) {
+func decodeSSRLink(link string) (*SSR, error) {
 	decodedLink := regexp.MustCompile(`[^/]+$`).ReplaceAllStringFunc(link, func(s string) string {
 		var decodedHalf []string
 		for _, half := range strings.Split(s, "_") {
@@ -158,7 +159,7 @@ func getSSR(url string, cache bool) ([]*SSR, error) {
 	links := strings.Split(strings.TrimSpace(string(safeDecode(raw))), "\n")
 	var res []*SSR
 	for _, link := range links {
-		ssr, err := decodeLink(link)
+		ssr, err := decodeSSRLink(link)
 		if err != nil {
 			log.Println("[warning](bad link skipped)", err)
 			continue
@@ -169,11 +170,35 @@ func getSSR(url string, cache bool) ([]*SSR, error) {
 	return res, nil
 }
 
+type server struct {
+	id      uint16
+	server  string
+	ratio   uint16
+	remarks string
+}
+type ssd struct {
+	airport       string
+	port          uint16
+	encryption    string
+	password      uint16
+	traffic_used  float32
+	traffic_total float32
+	expiry        string
+	url           string
+	//servers []server
+}
+
 func getSSD(url string, cache bool) ([]*SS, error) {
 	raw, err := loadRaw(url, cache)
 	if err != nil {
 		return nil, err
 	}
-	log.Println("raw", string(raw), "\n---\n", safeDecodeStr(string(raw)))
+	re := regexp.MustCompile(`ssd://(\w+)`)
+	js := safeDecodeStr(re.FindStringSubmatch(string(raw))[1])
+	ssd := ssd{}
+	if err := json.Unmarshal([]byte(js), &ssd); err != nil {
+		return nil, err
+	}
+	fmt.Println(ssd)
 	return nil, nil
 }

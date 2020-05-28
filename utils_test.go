@@ -41,7 +41,7 @@ func TestDecodeLink(t *testing.T) {
 		group:         safeDecodeStr("WWFoYWhhLUxURA"),
 		remarks:       safeDecodeStr("SEsgRiAtIDFHYnBz"),
 	}
-	output, err := decodeLink(input)
+	output, err := decodeSSRLink(input)
 	if err != nil {
 		t.Error(err)
 	}
