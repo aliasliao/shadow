@@ -43,6 +43,7 @@ type SS struct {
 	password     string
 	method       string // TODO enum
 	plugin       string
+	remarks      string
 }
 
 func safeDecode(raw []byte) []byte {
@@ -170,35 +171,51 @@ func getSSR(url string, cache bool) ([]*SSR, error) {
 	return res, nil
 }
 
-type server struct {
-	id      uint16
-	server  string
-	ratio   uint16
-	remarks string
-}
-type ssd struct {
-	airport       string
-	port          uint16
-	encryption    string
-	password      uint16
-	traffic_used  float32
-	traffic_total float32
-	expiry        string
-	url           string
-	//servers []server
-}
-
 func getSSD(url string, cache bool) ([]*SS, error) {
+	type Server struct {
+		Id      uint16
+		Server  string
+		Ratio   uint16
+		Remarks string
+	}
+	type SSD struct {
+		Airport       string
+		Port          uint16
+		Encryption    string
+		Password      string
+		Traffic_used  float32
+		Traffic_total float32
+		Expiry        string
+		Url           string
+		Servers       []Server
+	}
+
 	raw, err := loadRaw(url, cache)
 	if err != nil {
 		return nil, err
 	}
 	re := regexp.MustCompile(`ssd://(\w+)`)
 	js := safeDecodeStr(re.FindStringSubmatch(string(raw))[1])
-	ssd := ssd{}
+	var ssd *SSD
 	if err := json.Unmarshal([]byte(js), &ssd); err != nil {
 		return nil, err
 	}
-	fmt.Println(ssd)
-	return nil, nil
+
+	var res []*SS
+	for _, server := range ssd.Servers {
+		res = append(res, &SS{
+			server:       server.Server,
+			serverPort:   ssd.Port,
+			localAddress: "",
+			localPort:    0,
+			timeout:      0,
+			workers:      0,
+			password:     ssd.Password,
+			method:       ssd.Encryption,
+			plugin:       "",
+			remarks:      server.Remarks,
+		})
+	}
+
+	return res, nil
 }
