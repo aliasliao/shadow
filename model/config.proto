@@ -1,0 +1,38 @@
+syntax = "proto3";
+
+package model;
+option go_package = "model";
+
+message Config {
+    LogObject log = 1;
+    ApiObject api = 2;
+    DnsObject dns = 3;
+    RoutingObject routing = 4;
+    PolicyObject policy = 5;
+    repeated InboundObject inbounds = 6;
+    repeated OutboundObject outbounds = 7;
+    TransportObject transport = 8;
+    StatsObject stats = 9;
+    ReverseObject reverse = 10;
+}
+
+message LogObject {
+}
+message ApiObject {
+}
+message DnsObject {
+}
+message RoutingObject {
+}
+message PolicyObject {
+}
+message InboundObject {
+}
+message OutboundObject {
+}
+message TransportObject {
+}
+message StatsObject {
+}
+message ReverseObject {
+}
