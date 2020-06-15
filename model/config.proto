@@ -1,7 +1,7 @@
 syntax = "proto3";
 
 package model;
-option go_package = "model";
+option go_package = "github.com/aliasliao/shadow/model";
 
 message Config {
     LogObject log = 1;
@@ -23,10 +23,78 @@ message ApiObject {
 message DnsObject {
 }
 message RoutingObject {
+    enum DomainStrategy {
+        AsIs = 0;
+        IPIfNonMatch = 1;
+        IPOnDemand = 2;
+    }
+    message RuleObject {
+        enum Type {
+            field = 0;
+        }
+        enum Network {
+            tcp = 0;
+            udp = 1;
+            tcp_udp = 2; // TODO
+        }
+        enum Protocol {
+            http = 0;
+            tls = 1;
+            bittorrent = 2;
+        }
+        Type type = 1;
+        repeated string domain = 2;
+        repeated string ip = 3;
+        uint32 port = 4; // TODO
+        Network network = 5;
+        repeated string source = 6;
+        repeated string user = 7;
+        repeated string inboundTag = 8;
+        Protocol protocol = 9;
+        string attrs = 10;
+        string outboundTag = 11;
+        string balancerTag = 12;
+    }
+    message BalancerObject {
+        string tag = 1;
+        repeated string selector = 2;
+    }
+
+    DomainStrategy domainStrategy = 1;
+    repeated RuleObject rules = 2;
+    repeated BalancerObject balancers = 3;
 }
 message PolicyObject {
 }
 message InboundObject {
+    message Shadowsocks {
+    }
+    message StreamSettingsObject {
+    } // TODO
+    message SniffingObject {
+        bool enabled = 1;
+        repeated string destOverride = 2;
+    }
+    message AllocateObject {
+        enum Strategy {
+            always = 0;
+            random = 2;
+        }
+        Strategy strategy = 1;
+        uint32 refresh = 2;
+        uint32 concurrency = 3;
+    }
+
+    uint32 port = 1; // TODO
+    string listen = 2;
+    string protocol = 3;
+    oneof settings {
+        Shadowsocks shadowsocks = 8;
+    }
+    StreamSettingsObject streamSettings = 4;
+    string tag = 5;
+    SniffingObject sniffing = 6;
+    AllocateObject allocate = 7;
 }
 message OutboundObject {
 }
