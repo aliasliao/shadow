@@ -3,6 +3,8 @@ syntax = "proto3";
 package model;
 option go_package = "github.com/aliasliao/shadow/model";
 
+import "model/shadowsocks.proto";
+
 message Config {
     LogObject log = 1;
     ApiObject api = 2;
@@ -66,9 +68,8 @@ message RoutingObject {
 }
 message PolicyObject {
 }
+
 message InboundObject {
-    message Shadowsocks {
-    }
     message StreamSettingsObject {
     } // TODO
     message SniffingObject {
@@ -87,16 +88,28 @@ message InboundObject {
 
     uint32 port = 1; // TODO
     string listen = 2;
-    string protocol = 3;
-    oneof settings {
-        Shadowsocks shadowsocks = 8;
-    }
-    StreamSettingsObject streamSettings = 4;
-    string tag = 5;
-    SniffingObject sniffing = 6;
-    AllocateObject allocate = 7;
+    Protocol protocol = 3;
+    ShadowsocksInboundConfigurationObject settings = 4;
+    StreamSettingsObject streamSettings = 5;
+    string tag = 6;
+    SniffingObject sniffing = 7;
+    AllocateObject allocate = 8;
 }
 message OutboundObject {
+    message StreamSettingsObject {
+    }
+    message ProxySettingsObject {
+    }
+    message MuxObject {
+    }
+
+    string sendThrough = 1;
+    Protocol protocol = 2;
+    ShadowsocksOutboundConfigurationObject settings = 3;
+    string tag = 4;
+    StreamSettingsObject streamSettings = 5;
+    ProxySettingsObject proxySettingsObject = 6;
+    MuxObject mux = 7;
 }
 message TransportObject {
 }
