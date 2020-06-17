@@ -14,6 +14,8 @@ import (
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/aliasliao/shadow/model"
 )
 
 type SSR struct {
@@ -218,4 +220,59 @@ func getSSD(url string, cache bool) ([]*SS, error) {
 	}
 
 	return res, nil
+}
+
+func ssToConfig(ss *SS) *model.Config {
+	config := &model.Config{
+		Log:     nil,
+		Api:     nil,
+		Dns:     nil,
+		Routing: nil,
+		Policy:  nil,
+		Inbounds: []*model.InboundObject{{
+			Port:     1080,
+			Listen:   "127.0.0.1",
+			Protocol: model.Protocol_Socks,
+			Settings: &model.ShadowsocksInboundConfigurationObject{
+				Email:    "",
+				Method:   0,
+				Password: "",
+				Level:    0,
+				Ota:      false,
+				Network:  0,
+			},
+			StreamSettings: nil,
+			Tag:            "",
+			Sniffing: &model.InboundObject_SniffingObject{
+				Enabled:      true,
+				DestOverride: []string{"http", "tls"},
+			},
+			Allocate: nil,
+		}},
+		Outbounds: []*model.OutboundObject{{
+			SendThrough: "",
+			Protocol:    model.Protocol_Shadowsocks,
+			Settings: &model.ShadowsocksOutboundConfigurationObject{
+				Servers: []*model.ShadowsocksOutboundConfigurationObject_ServerObject{{
+					// TODO
+					Email:    "",
+					Address:  "",
+					Port:     0,
+					Method:   0,
+					Password: "",
+					Ota:      false,
+					Level:    0,
+				}},
+			},
+			Tag:                 "",
+			StreamSettings:      &model.OutboundObject_StreamSettingsObject{},
+			ProxySettingsObject: &model.OutboundObject_ProxySettingsObject{},
+			Mux:                 &model.OutboundObject_MuxObject{},
+		}},
+		Transport: nil,
+		Stats:     nil,
+		Reverse:   nil,
+	}
+
+	return config
 }

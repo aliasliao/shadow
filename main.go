@@ -5,6 +5,7 @@ import (
 	"log"
 )
 
+// protoc --proto_path=.  --go_out=. ./model/*.proto
 // shadow -type ss -origin https://example.com -cache
 func main() {
 	originType := flag.String("type", "ss", `type of the origin, can be "ss" or "ssr"`)
@@ -19,8 +20,8 @@ func main() {
 			log.Fatalln("error:", err)
 		}
 		if *verbose {
-		    for index, item := range res {
-		    	log.Println(index, *item)
+			for index, item := range res {
+				log.Println(index, *item)
 			}
 		}
 		log.Println("total:", len(res))
