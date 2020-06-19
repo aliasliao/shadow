@@ -20,11 +20,11 @@ import (
 
 type SSR struct {
 	server        string
-	serverPort    uint16
+	serverPort    uint32
 	localAddress  string
-	localPort     uint16
-	timeout       uint16
-	workers       uint16
+	localPort     uint32
+	timeout       uint32
+	workers       uint32
 	password      string
 	method        string // TODO enum
 	obfs          string // TODO enum
@@ -37,11 +37,11 @@ type SSR struct {
 
 type SS struct {
 	server       string
-	serverPort   uint16
+	serverPort   uint32
 	localAddress string
-	localPort    uint16
-	timeout      uint16
-	workers      uint16
+	localPort    uint32
+	timeout      uint32
+	workers      uint32
 	password     string
 	method       string // TODO enum
 	plugin       string
@@ -119,7 +119,7 @@ func decodeSSRLink(link string) (*SSR, error) {
 
 	return &SSR{
 		server:        captured["server"],
-		serverPort:    uint16(serverPort),
+		serverPort:    uint32(serverPort),
 		localAddress:  "",
 		localPort:     0,
 		timeout:       0,
@@ -175,14 +175,14 @@ func getSSR(url string, cache bool) ([]*SSR, error) {
 
 func getSSD(url string, cache bool) ([]*SS, error) {
 	type Server struct {
-		Id      uint16
+		Id      uint32
 		Server  string
-		Ratio   uint16
+		Ratio   uint32
 		Remarks string
 	}
 	type SSD struct {
 		Airport       string
-		Port          uint16
+		Port          uint32
 		Encryption    string
 		Password      string
 		Traffic_used  float32
@@ -222,7 +222,20 @@ func getSSD(url string, cache bool) ([]*SS, error) {
 	return res, nil
 }
 
-func ssToConfig(ss *SS) *model.Config {
+func sssToConfig(sss []*SS) *model.Config {
+	var servers []*model.ShadowsocksOutboundConfigurationObject_ServerObject
+	for _, ss := range sss {
+		servers = append(servers, &model.ShadowsocksOutboundConfigurationObject_ServerObject{
+			Email:    "",
+			Address:  ss.server,
+			Port:     ss.serverPort,
+			Method:   model.Method(model.Method_value[ss.method]), // TODO
+			Password: ss.password,
+			Ota:      false,
+			Level:    0,
+		})
+	}
+
 	config := &model.Config{
 		Log:     nil,
 		Api:     nil,
@@ -253,16 +266,7 @@ func ssToConfig(ss *SS) *model.Config {
 			SendThrough: "",
 			Protocol:    model.Protocol_Shadowsocks,
 			Settings: &model.ShadowsocksOutboundConfigurationObject{
-				Servers: []*model.ShadowsocksOutboundConfigurationObject_ServerObject{{
-					// TODO
-					Email:    "",
-					Address:  "",
-					Port:     0,
-					Method:   0,
-					Password: "",
-					Ota:      false,
-					Level:    0,
-				}},
+				Servers: servers,
 			},
 			Tag:                 "",
 			StreamSettings:      &model.OutboundObject_StreamSettingsObject{},
