@@ -18,7 +18,7 @@ import (
 	"github.com/aliasliao/shadow/model"
 )
 
-type SSR struct {
+type ShadowsocksR struct {
 	server        string
 	serverPort    uint32
 	localAddress  string
@@ -35,7 +35,7 @@ type SSR struct {
 	remarks       string
 }
 
-type SS struct {
+type Shadowsocks struct {
 	server       string
 	serverPort   uint32
 	localAddress string
@@ -52,7 +52,7 @@ func safeDecode(raw []byte) []byte {
 	var ret []byte
 	safeLen := len(raw) - len(raw)%4
 	safe, rest := raw[0:safeLen], raw[safeLen:]
-	decodedSafe, err := base64.URLEncoding.DecodeString(string(safe))
+	decodedSafe, err := base64.StdEncoding.DecodeString(string(safe))
 	if err != nil {
 		log.Println("[warning](base64 error)", err)
 		log.Println("raw---->", string(raw))
@@ -87,7 +87,7 @@ func safeDecodeStr(raw string) string {
 	return string(safeDecode([]byte(raw)))
 }
 
-func decodeSSRLink(link string) (*SSR, error) {
+func decodeSSRLink(link string) (*ShadowsocksR, error) {
 	decodedLink := regexp.MustCompile(`[^/]+$`).ReplaceAllStringFunc(link, func(s string) string {
 		var decodedHalf []string
 		for _, half := range strings.Split(s, "_") {
@@ -117,7 +117,7 @@ func decodeSSRLink(link string) (*SSR, error) {
 		return nil, err
 	}
 
-	return &SSR{
+	return &ShadowsocksR{
 		server:        captured["server"],
 		serverPort:    uint32(serverPort),
 		localAddress:  "",
@@ -143,24 +143,25 @@ func loadRaw(url string, cache bool) ([]byte, error) {
 		raw, _ = ioutil.ReadFile(CacheFile)
 	} else {
 		log.Println("Loading from web...")
-		res, err := (&http.Client{Timeout: 20 * time.Second}).Get(url)
+		res, err := (&http.Client{Timeout: 600 * time.Second}).Get(url)
 		if err != nil {
 			return nil, err
 		}
 		defer res.Body.Close()
 		raw, _ = ioutil.ReadAll(res.Body)
 		ioutil.WriteFile(CacheFile, raw, 0755)
+		log.Println("File saved to", CacheFile)
 	}
 	return raw, nil
 }
 
-func getSSR(url string, cache bool) ([]*SSR, error) {
+func parseSSR(url string, cache bool) ([]*ShadowsocksR, error) {
 	raw, err := loadRaw(url, cache)
 	if err != nil {
 		return nil, err
 	}
 	links := strings.Split(strings.TrimSpace(string(safeDecode(raw))), "\n")
-	var res []*SSR
+	var res []*ShadowsocksR
 	for _, link := range links {
 		ssr, err := decodeSSRLink(link)
 		if err != nil {
@@ -173,7 +174,7 @@ func getSSR(url string, cache bool) ([]*SSR, error) {
 	return res, nil
 }
 
-func getSSD(url string, cache bool) ([]*SS, error) {
+func parseSSD(url string, cache bool) ([]*Shadowsocks, error) {
 	type Server struct {
 		Id      uint32
 		Server  string
@@ -196,16 +197,16 @@ func getSSD(url string, cache bool) ([]*SS, error) {
 	if err != nil {
 		return nil, err
 	}
-	re := regexp.MustCompile(`ssd://(\w+)`)
+	re := regexp.MustCompile(`ssd://([a-zA-Z0-9+/]+)`) // encodeStd
 	js := safeDecodeStr(re.FindStringSubmatch(string(raw))[1])
 	var ssd *SSD
 	if err := json.Unmarshal([]byte(js), &ssd); err != nil {
 		return nil, err
 	}
 
-	var res []*SS
+	var res []*Shadowsocks
 	for _, server := range ssd.Servers {
-		res = append(res, &SS{
+		res = append(res, &Shadowsocks{
 			server:       server.Server,
 			serverPort:   ssd.Port,
 			localAddress: "",
@@ -222,14 +223,18 @@ func getSSD(url string, cache bool) ([]*SS, error) {
 	return res, nil
 }
 
-func sssToConfig(sss []*SS) *model.Config {
+func parseSS(url string, cache bool) ([]*Shadowsocks, error) {
+	return []*Shadowsocks{}, nil
+}
+
+func ssToConfig(sss []*Shadowsocks) *model.Config {
 	var servers []*model.ShadowsocksOutboundConfigurationObject_ServerObject
 	for _, ss := range sss {
 		servers = append(servers, &model.ShadowsocksOutboundConfigurationObject_ServerObject{
 			Email:    "",
 			Address:  ss.server,
 			Port:     ss.serverPort,
-			Method:   model.Method(model.Method_value[ss.method]), // TODO
+			Method:   ss.method,
 			Password: ss.password,
 			Ota:      false,
 			Level:    0,
@@ -237,45 +242,22 @@ func sssToConfig(sss []*SS) *model.Config {
 	}
 
 	config := &model.Config{
-		Log:     nil,
-		Api:     nil,
-		Dns:     nil,
-		Routing: nil,
-		Policy:  nil,
 		Inbounds: []*model.InboundObject{{
 			Port:     1080,
 			Listen:   "127.0.0.1",
-			Protocol: model.Protocol_Socks,
-			Settings: &model.ShadowsocksInboundConfigurationObject{
-				Email:    "",
-				Method:   0,
-				Password: "",
-				Level:    0,
-				Ota:      false,
-				Network:  0,
-			},
-			StreamSettings: nil,
-			Tag:            "",
+			Protocol: "socks",
+			Settings: nil,
 			Sniffing: &model.InboundObject_SniffingObject{
 				Enabled:      true,
 				DestOverride: []string{"http", "tls"},
 			},
-			Allocate: nil,
 		}},
 		Outbounds: []*model.OutboundObject{{
-			SendThrough: "",
-			Protocol:    model.Protocol_Shadowsocks,
+			Protocol: "shadowsocks",
 			Settings: &model.ShadowsocksOutboundConfigurationObject{
 				Servers: servers,
 			},
-			Tag:                 "",
-			StreamSettings:      &model.OutboundObject_StreamSettingsObject{},
-			ProxySettingsObject: &model.OutboundObject_ProxySettingsObject{},
-			Mux:                 &model.OutboundObject_MuxObject{},
 		}},
-		Transport: nil,
-		Stats:     nil,
-		Reverse:   nil,
 	}
 
 	return config

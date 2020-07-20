@@ -6,114 +6,23 @@ option go_package = "model";
 import "model/shadowsocks.proto";
 
 message Config {
-    LogObject log = 1;
-    ApiObject api = 2;
-    DnsObject dns = 3;
-    RoutingObject routing = 4;
-    PolicyObject policy = 5;
-    repeated InboundObject inbounds = 6;
-    repeated OutboundObject outbounds = 7;
-    TransportObject transport = 8;
-    StatsObject stats = 9;
-    ReverseObject reverse = 10;
-}
-
-message LogObject {
-}
-message ApiObject {
-}
-message DnsObject {
-}
-message RoutingObject {
-    enum DomainStrategy {
-        AsIs = 0;
-        IPIfNonMatch = 1;
-        IPOnDemand = 2;
-    }
-    message RuleObject {
-        enum Type {
-            field = 0;
-        }
-        enum Network {
-            tcp = 0;
-            udp = 1;
-            tcp_udp = 2; // TODO
-        }
-        enum Protocol {
-            http = 0;
-            tls = 1;
-            bittorrent = 2;
-        }
-        Type type = 1;
-        repeated string domain = 2;
-        repeated string ip = 3;
-        uint32 port = 4; // TODO
-        Network network = 5;
-        repeated string source = 6;
-        repeated string user = 7;
-        repeated string inboundTag = 8;
-        Protocol protocol = 9;
-        string attrs = 10;
-        string outboundTag = 11;
-        string balancerTag = 12;
-    }
-    message BalancerObject {
-        string tag = 1;
-        repeated string selector = 2;
-    }
-
-    DomainStrategy domainStrategy = 1;
-    repeated RuleObject rules = 2;
-    repeated BalancerObject balancers = 3;
-}
-message PolicyObject {
+    repeated InboundObject inbounds = 1;
+    repeated OutboundObject outbounds = 2;
 }
 
 message InboundObject {
-    message StreamSettingsObject {
-    } // TODO
     message SniffingObject {
         bool enabled = 1;
         repeated string destOverride = 2;
     }
-    message AllocateObject {
-        enum Strategy {
-            always = 0;
-            random = 2;
-        }
-        Strategy strategy = 1;
-        uint32 refresh = 2;
-        uint32 concurrency = 3;
-    }
 
-    uint32 port = 1; // TODO
+    uint32 port = 1;
     string listen = 2;
-    Protocol protocol = 3;
+    string protocol = 3;
     ShadowsocksInboundConfigurationObject settings = 4;
-    StreamSettingsObject streamSettings = 5;
-    string tag = 6;
-    SniffingObject sniffing = 7;
-    AllocateObject allocate = 8;
+    SniffingObject sniffing = 5;
 }
 message OutboundObject {
-    message StreamSettingsObject {
-    }
-    message ProxySettingsObject {
-    }
-    message MuxObject {
-    }
-
-    string sendThrough = 1;
-    Protocol protocol = 2;
-    ShadowsocksOutboundConfigurationObject settings = 3;
-    string tag = 4;
-    StreamSettingsObject streamSettings = 5;
-    ProxySettingsObject proxySettingsObject = 6;
-    MuxObject mux = 7;
-}
-message TransportObject {
-}
-message StatsObject {
-}
-message ReverseObject {
+    string protocol = 1;
+    ShadowsocksOutboundConfigurationObject settings = 2;
 }

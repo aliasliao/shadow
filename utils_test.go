@@ -25,7 +25,7 @@ func TestSafeDecode(t *testing.T) {
 
 func TestDecodeLink(t *testing.T) {
 	input := "ssr://dGtwYS5oay1mLnlhaGFoYS5wcm86NjU1MzM6YXV0aF9hZXMxMjhfbWQ1OmNoYWNoYTIwLWlldGY6dGxzMS4yX3RpY2tldF9hdXRoOmVXRm9ZV2hoYkhSay8_b2Jmc3BhcmFtPVpUSXdNRGd5TnpVek9TNWtiM2R1Ykc5aFpDNTNhVzVrYjNkemRYQmtZWFJsTG1OdmJRJnByb3RvcGFyYW09TWpjMU16azZSR0o1YmtvM01BJnJlbWFya3M9U0VzZ1JpQXRJREZIWW5CeiZncm91cD1XV0ZvWVdoaExVeFVSQQ"
-	expect := &SSR{
+	expect := &ShadowsocksR{
 		server:        "tkpa.hk-f.yahaha.pro",
 		serverPort:    65533,
 		localAddress:  "",
