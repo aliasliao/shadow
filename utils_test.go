@@ -7,18 +7,31 @@ import (
 )
 
 func TestSafeDecode(t *testing.T) {
-	t.Run("decode 4s", func(t *testing.T) {
+	t.Run("decode string whose length is a multiple of four", func(t *testing.T) {
 		input := []byte("R2hNVlhoVlVr")
 		expect := []byte("GhMVXhVUk")
 		if output := safeDecode(input); bytes.Compare(output, expect) != 0 {
 			t.Errorf("Expect: %s, got: %s", expect, output)
 		}
 	})
-	t.Run("decode none 4s", func(t *testing.T) {
+	t.Run("decode string whose length is NOT a multiple of four", func(t *testing.T) {
 		input := []byte("R2hNVlhoVlVrRQo")
 		expect := []byte("GhMVXhVUkE\n")
 		if output := safeDecode(input); bytes.Compare(output, expect) != 0 {
 			t.Errorf("Expect: %s, got: %s", expect, output)
+		}
+	})
+	t.Run(`decode string which contains "-_" or "+/"`, func(t *testing.T) {
+		cases := map[string]string{
+			"6L-H5pyf5pe26Ze077yaMjAyMC0wNy0z":                                         "过期时间：2020-07-3",
+			"QVNZTkNIUk9OT1VTIFRSQU5TRkVSTU9ERSDmsLjkuYXomZrpgJrot6_ov57mjqVQVkNDIEIw": "ASYNCHRONOUS TRANSFERMODE 永久虚通路连接PVCC B0",
+			"6L+H5pyf5pe26Ze077yaMjAyMC0wNy0z":                                         "过期时间：2020-07-3",
+			"QVNZTkNIUk9OT1VTIFRSQU5TRkVSTU9ERSDmsLjkuYXomZrpgJrot6/ov57mjqVQVkNDIEIw": "ASYNCHRONOUS TRANSFERMODE 永久虚通路连接PVCC B0",
+		}
+		for input, expect := range cases {
+			if output := safeDecode([]byte(input)); bytes.Compare(output, []byte(expect)) != 0 {
+				t.Errorf("Expect: %s, got: %s", input, output)
+			}
 		}
 	})
 }

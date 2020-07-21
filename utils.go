@@ -45,6 +45,7 @@ type Shadowsocks struct {
 	password     string
 	method       string // TODO enum
 	plugin       string
+	group        string
 	remarks      string
 }
 
@@ -141,7 +142,40 @@ func decodeSSRLink(link string) (*ShadowsocksR, error) {
 }
 
 func decodeSSLink(link string) (*Shadowsocks, error) {
-	return nil, nil
+	re := regexp.MustCompile(`^ss://(?P<methodAndPassword>\S+)@(?P<server>\S+):(?P<serverPort>\S+)/\?group=(?P<group>\S+)#(?P<remarks>\S+)$`)
+	keys := re.SubexpNames()
+	values := re.FindStringSubmatch(link)
+	if values == nil {
+		return nil, errors.New(fmt.Sprintf("unsupported format (%s)", link))
+	}
+	captured := map[string]string{}
+	for index, key := range keys {
+		captured[key] = values[index]
+	}
+
+	serverPort, err := strconv.ParseUint(captured["serverPort"], 10, 16)
+	if err != nil {
+		return nil, err
+	}
+	methodAndPassword := strings.Split(safeDecodeStr(captured["methodAndPassword"]), ":")
+	remarks, err := url.QueryUnescape(captured["remarks"])
+	if err != nil {
+		return nil, err
+	}
+
+	return &Shadowsocks{
+		server:       captured["server"],
+		serverPort:   uint32(serverPort),
+		localAddress: "",
+		localPort:    0,
+		timeout:      0,
+		workers:      0,
+		password:     methodAndPassword[1],
+		method:       methodAndPassword[0],
+		plugin:       "",
+		group:        safeDecodeStr(captured["group"]),
+		remarks:      remarks,
+	}, nil
 }
 
 func loadRaw(url string, cache bool) ([]byte, error) {
