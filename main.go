@@ -30,7 +30,7 @@ func main() {
 		if err != nil {
 			log.Fatalln("marshal error:", err)
 		}
-		ioutil.WriteFile("config.json", []byte(config), 0755)
+		ioutil.WriteFile("ssd_config.json", []byte(config), 0755)
 	} else if *originType == "ss" {
 		res, err := parseSS(*origin, *cache)
 		if err != nil {
@@ -42,6 +42,12 @@ func main() {
 			}
 		}
 		log.Println("total:", len(res))
+
+		config, err := (&jsonpb.Marshaler{Indent: "  "}).MarshalToString(ssToConfig(res))
+		if err != nil {
+			log.Fatalln("marshal error:", err)
+		}
+		ioutil.WriteFile("ss_config.json", []byte(config), 0755)
 	} else if *originType == "ssr" {
 		res, err := parseSSR(*origin, *cache)
 		if err != nil {
