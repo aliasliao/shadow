@@ -7,12 +7,10 @@ import (
 	"log"
 )
 
-// protoc --proto_path=.  --go_out=. ./model/*.proto
-// shadow -type ss -origin https://example.com -cache
 func main() {
 	originType := flag.String("type", "ss", `type of the origin, can be "ss" or "ssr"`)
 	origin := flag.String("origin", "", `origin url`)
-	cache := flag.Bool("cache", false, `whether to load data from cache file`)
+	cache := flag.Bool("cache", true, `whether to load data from cache file`)
 	verbose := flag.Bool("verbose", false, `whether to show detail`)
 	flag.Parse()
 

@@ -52,7 +52,12 @@ func safeDecode(raw []byte) []byte {
 	var ret []byte
 	safeLen := len(raw) - len(raw)%4
 	safe, rest := raw[0:safeLen], raw[safeLen:]
-	decodedSafe, err := base64.StdEncoding.DecodeString(string(safe))
+	decodedSafe, err := (func() ([]byte, error) {
+		if regexp.MustCompile(`^[A-Za-z0-9+/]*$`).Match(safe) {
+			return base64.StdEncoding.DecodeString(string(safe))
+		}
+		return base64.URLEncoding.DecodeString(string(safe))
+	})()
 	if err != nil {
 		log.Println("[warning](base64 error)", err)
 		log.Println("raw---->", string(raw))
@@ -133,6 +138,10 @@ func decodeSSRLink(link string) (*ShadowsocksR, error) {
 		group:         safeDecodeStr(captured["group"]),
 		remarks:       safeDecodeStr(captured["remarks"]),
 	}, nil
+}
+
+func decodeSSLink(link string) (*Shadowsocks, error) {
+	return nil, nil
 }
 
 func loadRaw(url string, cache bool) ([]byte, error) {
@@ -224,7 +233,22 @@ func parseSSD(url string, cache bool) ([]*Shadowsocks, error) {
 }
 
 func parseSS(url string, cache bool) ([]*Shadowsocks, error) {
-	return []*Shadowsocks{}, nil
+	raw, err := loadRaw(url, cache)
+	if err != nil {
+		return nil, err
+	}
+	links := strings.Split(strings.TrimSpace(string(safeDecode(raw))), "\n")
+	var res []*Shadowsocks
+	for _, link := range links {
+		ss, err := decodeSSLink(link)
+		if err != nil {
+			log.Println("[warning](bad link skipped", err)
+			continue
+		}
+		res = append(res, ss)
+	}
+
+	return res, nil
 }
 
 func ssToConfig(sss []*Shadowsocks) *model.Config {

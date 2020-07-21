@@ -2,3 +2,4 @@
 *.exe
 origins.txt
 *.pb.go
+config.json
