@@ -3,3 +3,4 @@
 origins.txt
 *.pb.go
 *.json
+shadow
