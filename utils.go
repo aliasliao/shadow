@@ -54,21 +54,27 @@ func safeDecode(raw []byte) []byte {
 	safeLen := len(raw) - len(raw)%4
 	safe, rest := raw[0:safeLen], raw[safeLen:]
 	decodedSafe, err := (func() ([]byte, error) {
-		if regexp.MustCompile(`^[A-Za-z0-9+/]*$`).Match(safe) {
+		if strings.ContainsAny(string(safe), "+/") {
 			return base64.StdEncoding.DecodeString(string(safe))
 		}
 		return base64.URLEncoding.DecodeString(string(safe))
 	})()
 	if err != nil {
 		log.Println("[warning](base64 error)", err)
-		log.Println("raw---->", string(raw))
+		log.Panic("raw---->", string(raw))
 	}
 
 	var decodeMap [256]uint8
 	for i := 0; i < len(decodeMap); i++ {
 		decodeMap[i] = 0xFF
 	}
-	encoder := "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_"
+	encoder := (func() string {
+		if strings.ContainsAny(string(safe), "+/") {
+			return "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/"
+		} else {
+			return "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_"
+		}
+	})()
 	for i := 0; i < len(encoder); i++ {
 		decodeMap[encoder[i]] = uint8(i)
 	}
@@ -301,7 +307,7 @@ func ssToConfig(sss []*Shadowsocks) *model.Config {
 
 	config := &model.Config{
 		Inbounds: []*model.InboundObject{{
-			Port:     1080,
+			Port:     1081,
 			Listen:   "127.0.0.1",
 			Protocol: "socks",
 			Settings: nil,
