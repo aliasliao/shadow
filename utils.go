@@ -10,6 +10,7 @@ import (
 	"net/http"
 	"net/url"
 	"os"
+	"reflect"
 	"regexp"
 	"strconv"
 	"strings"
@@ -17,6 +18,10 @@ import (
 
 	"github.com/aliasliao/shadow/model"
 )
+
+type Shadow interface {
+	getType() reflect.Type
+}
 
 type ShadowsocksR struct {
 	server        string
@@ -34,7 +39,6 @@ type ShadowsocksR struct {
 	group         string
 	remarks       string
 }
-
 type Shadowsocks struct {
 	server       string
 	serverPort   uint32
@@ -47,6 +51,13 @@ type Shadowsocks struct {
 	plugin       string
 	group        string
 	remarks      string
+}
+
+func (ssr *ShadowsocksR) getType() reflect.Type {
+	return reflect.TypeOf(ssr)
+}
+func (ss *Shadowsocks) getType() reflect.Type {
+	return reflect.TypeOf(ss)
 }
 
 func safeDecode(raw []byte) []byte {
@@ -204,26 +215,26 @@ func loadRaw(url string, cache bool) ([]byte, error) {
 	return raw, nil
 }
 
-func parseSSR(url string, cache bool) ([]*ShadowsocksR, error) {
+func parseSSR(url string, cache bool) ([]Shadow, error) {
 	raw, err := loadRaw(url, cache)
 	if err != nil {
 		return nil, err
 	}
 	links := strings.Split(strings.TrimSpace(string(safeDecode(raw))), "\n")
-	var res []*ShadowsocksR
+	var res []Shadow
 	for _, link := range links {
 		ssr, err := decodeSSRLink(link)
 		if err != nil {
 			log.Println("[warning](bad link skipped)", err)
 			continue
 		}
-		res = append(res, ssr)
+		res = append(res, Shadow(ssr))
 	}
 
 	return res, nil
 }
 
-func parseSSD(url string, cache bool) ([]*Shadowsocks, error) {
+func parseSSD(url string, cache bool) ([]Shadow, error) {
 	type Server struct {
 		Id      uint32
 		Server  string
@@ -253,9 +264,9 @@ func parseSSD(url string, cache bool) ([]*Shadowsocks, error) {
 		return nil, err
 	}
 
-	var res []*Shadowsocks
+	var res []Shadow
 	for _, server := range ssd.Servers {
-		res = append(res, &Shadowsocks{
+		ss := &Shadowsocks{
 			server:       server.Server,
 			serverPort:   ssd.Port,
 			localAddress: "",
@@ -266,26 +277,27 @@ func parseSSD(url string, cache bool) ([]*Shadowsocks, error) {
 			method:       ssd.Encryption,
 			plugin:       "",
 			remarks:      server.Remarks,
-		})
+		}
+		res = append(res, Shadow(ss))
 	}
 
 	return res, nil
 }
 
-func parseSS(url string, cache bool) ([]*Shadowsocks, error) {
+func parseSS(url string, cache bool) ([]Shadow, error) {
 	raw, err := loadRaw(url, cache)
 	if err != nil {
 		return nil, err
 	}
 	links := strings.Split(strings.TrimSpace(string(safeDecode(raw))), "\n")
-	var res []*Shadowsocks
+	var res []Shadow
 	for _, link := range links {
 		ss, err := decodeSSLink(link)
 		if err != nil {
 			log.Println("[warning](bad link skipped", err)
 			continue
 		}
-		res = append(res, ss)
+		res = append(res, Shadow(ss))
 	}
 
 	return res, nil

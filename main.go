@@ -14,52 +14,35 @@ func main() {
 	verbose := flag.Bool("verbose", false, `whether to show detail`)
 	flag.Parse()
 
-	if *originType == "ssd" {
-		res, err := parseSSD(*origin, *cache)
-		if err != nil {
-			log.Fatalln("error:", err)
-		}
-		if *verbose {
-			for index, item := range res {
-				log.Println(index, *item)
-			}
-		}
-		log.Println("total:", len(res))
+	parser := map[string]func(string, bool) ([]Shadow, error){
+		"ssd": parseSSD,
+		"ss":  parseSS,
+		"ssr": parseSSR,
+	}[*originType]
 
-		config, err := (&jsonpb.Marshaler{Indent: "  "}).MarshalToString(ssToConfig(res))
-		if err != nil {
-			log.Fatalln("marshal error:", err)
-		}
-		ioutil.WriteFile("ssd_config.json", []byte(config), 0755)
-	} else if *originType == "ss" {
-		res, err := parseSS(*origin, *cache)
-		if err != nil {
-			log.Fatalln("error:", err)
-		}
-		if *verbose {
-			for index, item := range res {
-				log.Println(index, *item)
-			}
-		}
-		log.Println("total:", len(res))
-
-		config, err := (&jsonpb.Marshaler{Indent: "  "}).MarshalToString(ssToConfig(res))
-		if err != nil {
-			log.Fatalln("marshal error:", err)
-		}
-		ioutil.WriteFile("ss_config.json", []byte(config), 0755)
-	} else if *originType == "ssr" {
-		res, err := parseSSR(*origin, *cache)
-		if err != nil {
-			log.Fatalln("error:", err)
-		}
-		if *verbose {
-			for index, item := range res {
-				log.Println(index, *item)
-			}
-		}
-		log.Println("total:", len(res))
-	} else {
+	if parser == nil {
 		log.Fatalln("wrong type")
 	}
+
+	shadows, err := parser(*origin, *cache)
+	if err != nil {
+		log.Fatalln("error:", err)
+	}
+	if *verbose {
+		for index, shadow := range shadows {
+			log.Println(index, shadow)
+		}
+	}
+	log.Println("total:", len(shadows))
+	var values []*Shadowsocks
+	for _, shadow := range shadows {
+		value := shadow.(*Shadowsocks) // TODO: assert by type
+		values = append(values, value)
+	}
+
+	config, err := (&jsonpb.Marshaler{Indent: "  "}).MarshalToString(ssToConfig(values))
+	if err != nil {
+		log.Fatalln("marshal error:", err)
+	}
+	ioutil.WriteFile(*originType+"_config.json", []byte(config), 0755)
 }
