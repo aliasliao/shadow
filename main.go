@@ -14,7 +14,7 @@ func main() {
 	verbose := flag.Bool("verbose", false, `whether to show detail`)
 	flag.Parse()
 
-	parser := map[string]func(string, bool) ([]Shadow, error){
+	parser := map[string]func(string, bool) (Shadow, error){
 		"ssd": parseSSD,
 		"ss":  parseSS,
 		"ssr": parseSSR,
@@ -24,23 +24,19 @@ func main() {
 		log.Fatalln("wrong type")
 	}
 
-	shadows, err := parser(*origin, *cache)
+	rawShadow, err := parser(*origin, *cache)
 	if err != nil {
 		log.Fatalln("error:", err)
 	}
+	list := rawShadow.(SSList)
 	if *verbose {
-		for index, shadow := range shadows {
-			log.Println(index, shadow)
+		for index, item := range list {
+			log.Println(index, item)
 		}
 	}
-	log.Println("total:", len(shadows))
-	var values []*Shadowsocks
-	for _, shadow := range shadows {
-		value := shadow.(*Shadowsocks) // TODO: assert by type
-		values = append(values, value)
-	}
+	log.Println("total:", len(list))
 
-	config, err := (&jsonpb.Marshaler{Indent: "  "}).MarshalToString(ssToConfig(values))
+	config, err := (&jsonpb.Marshaler{Indent: "  "}).MarshalToString(ssToConfig(list))
 	if err != nil {
 		log.Fatalln("marshal error:", err)
 	}

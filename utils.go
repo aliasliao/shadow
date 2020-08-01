@@ -53,11 +53,14 @@ type Shadowsocks struct {
 	remarks      string
 }
 
-func (ssr *ShadowsocksR) getType() reflect.Type {
-	return reflect.TypeOf(ssr)
+type SSRList []*ShadowsocksR
+type SSList []*Shadowsocks
+
+func (list SSRList) getType() reflect.Type {
+	return reflect.TypeOf(list)
 }
-func (ss *Shadowsocks) getType() reflect.Type {
-	return reflect.TypeOf(ss)
+func (list SSList) getType() reflect.Type {
+	return reflect.TypeOf(list)
 }
 
 func safeDecode(raw []byte) []byte {
@@ -215,26 +218,26 @@ func loadRaw(url string, cache bool) ([]byte, error) {
 	return raw, nil
 }
 
-func parseSSR(url string, cache bool) ([]Shadow, error) {
+func parseSSR(url string, cache bool) (Shadow, error) {
 	raw, err := loadRaw(url, cache)
 	if err != nil {
 		return nil, err
 	}
 	links := strings.Split(strings.TrimSpace(string(safeDecode(raw))), "\n")
-	var res []Shadow
+	var list SSRList
 	for _, link := range links {
 		ssr, err := decodeSSRLink(link)
 		if err != nil {
 			log.Println("[warning](bad link skipped)", err)
 			continue
 		}
-		res = append(res, Shadow(ssr))
+		list = append(list, ssr)
 	}
 
-	return res, nil
+	return list, nil
 }
 
-func parseSSD(url string, cache bool) ([]Shadow, error) {
+func parseSSD(url string, cache bool) (Shadow, error) {
 	type Server struct {
 		Id      uint32
 		Server  string
@@ -264,7 +267,7 @@ func parseSSD(url string, cache bool) ([]Shadow, error) {
 		return nil, err
 	}
 
-	var res []Shadow
+	var list SSList
 	for _, server := range ssd.Servers {
 		ss := &Shadowsocks{
 			server:       server.Server,
@@ -278,29 +281,29 @@ func parseSSD(url string, cache bool) ([]Shadow, error) {
 			plugin:       "",
 			remarks:      server.Remarks,
 		}
-		res = append(res, Shadow(ss))
+		list = append(list, ss)
 	}
 
-	return res, nil
+	return list, nil
 }
 
-func parseSS(url string, cache bool) ([]Shadow, error) {
+func parseSS(url string, cache bool) (Shadow, error) {
 	raw, err := loadRaw(url, cache)
 	if err != nil {
 		return nil, err
 	}
 	links := strings.Split(strings.TrimSpace(string(safeDecode(raw))), "\n")
-	var res []Shadow
+	var list SSList
 	for _, link := range links {
 		ss, err := decodeSSLink(link)
 		if err != nil {
 			log.Println("[warning](bad link skipped", err)
 			continue
 		}
-		res = append(res, Shadow(ss))
+		list = append(list, ss)
 	}
 
-	return res, nil
+	return list, nil
 }
 
 func ssToConfig(sss []*Shadowsocks) *model.Config {
