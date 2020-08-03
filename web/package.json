@@ -1,0 +1,12 @@
+{
+  "name": "web",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "build": "esbuild --bundle --outfile=output/index.js --loader:.js=js --target=es2018 index.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
+}
