@@ -4,7 +4,9 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "build": "esbuild --bundle --outfile=output/index.js --loader:.js=js --target=es2018 index.js"
+    "build": "esbuild --bundle --outfile=output/index.js --loader:.js=js --target=es2018 index.js",
+    "deploy": "scp output/index.js admin@router.asus.com:/tmp/mnt/liao/addons/shadow/index.js",
+    "all": "npm run build && npm run deploy"
   },
   "keywords": [],
   "author": "",

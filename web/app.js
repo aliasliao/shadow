@@ -2,8 +2,8 @@ const app = `
 <table>
 <thead>
 <tr>
-<td>hello</td>
-<td>word</td>
+<td>hello adsfasdfasdfasdf</td>
+<td>word dddddd</td>
 </tr>
 </thead>
 <tbody>
