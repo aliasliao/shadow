@@ -9,7 +9,6 @@ import (
 	"log"
 	"net/url"
 	"os"
-	"reflect"
 	"regexp"
 	"strconv"
 	"strings"
@@ -17,10 +16,6 @@ import (
 	"github.com/aliasliao/shadow/model"
 	"v2ray.com/core/infra/control"
 )
-
-type Shadow interface {
-	getType() reflect.Type
-}
 
 type ShadowsocksR struct {
 	server        string
@@ -50,16 +45,6 @@ type Shadowsocks struct {
 	plugin       string
 	group        string
 	remarks      string
-}
-
-type SSRList []*ShadowsocksR
-type SSList []*Shadowsocks
-
-func (list SSRList) getType() reflect.Type {
-	return reflect.TypeOf(list)
-}
-func (list SSList) getType() reflect.Type {
-	return reflect.TypeOf(list)
 }
 
 func safeDecode(raw []byte) []byte {
@@ -217,13 +202,13 @@ func loadRaw(url string, cache bool) ([]byte, error) {
 	return control.FetchHTTPContent(url)
 }
 
-func parseSSR(url string, cache bool) (Shadow, error) {
+func parseSSR(url string, cache bool) ([]*ShadowsocksR, error) {
 	raw, err := loadRaw(url, cache)
 	if err != nil {
 		return nil, err
 	}
 	links := strings.Split(strings.TrimSpace(string(safeDecode(raw))), "\n")
-	var list SSRList
+	var list []*ShadowsocksR
 	for _, link := range links {
 		ssr, err := decodeSSRLink(link)
 		if err != nil {
@@ -236,7 +221,7 @@ func parseSSR(url string, cache bool) (Shadow, error) {
 	return list, nil
 }
 
-func parseSSD(url string, cache bool) (Shadow, error) {
+func parseSSD(url string, cache bool) ([]*Shadowsocks, error) {
 	type Server struct {
 		Id      uint32
 		Server  string
@@ -266,7 +251,7 @@ func parseSSD(url string, cache bool) (Shadow, error) {
 		return nil, err
 	}
 
-	var list SSList
+	var list []*Shadowsocks
 	for _, server := range ssd.Servers {
 		ss := &Shadowsocks{
 			server:       server.Server,
@@ -286,13 +271,13 @@ func parseSSD(url string, cache bool) (Shadow, error) {
 	return list, nil
 }
 
-func parseSS(url string, cache bool) (Shadow, error) {
+func parseSS(url string, cache bool) ([]*Shadowsocks, error) {
 	raw, err := loadRaw(url, cache)
 	if err != nil {
 		return nil, err
 	}
 	links := strings.Split(strings.TrimSpace(string(safeDecode(raw))), "\n")
-	var list SSList
+	var list []*Shadowsocks
 	for _, link := range links {
 		ss, err := decodeSSLink(link)
 		if err != nil {
