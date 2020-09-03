@@ -2,9 +2,10 @@ package main
 
 import (
 	"flag"
-	"github.com/golang/protobuf/jsonpb"
 	"io/ioutil"
 	"log"
+
+	"github.com/golang/protobuf/jsonpb"
 )
 
 func main() {

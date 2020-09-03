@@ -7,16 +7,15 @@ import (
 	"fmt"
 	"io/ioutil"
 	"log"
-	"net/http"
 	"net/url"
 	"os"
 	"reflect"
 	"regexp"
 	"strconv"
 	"strings"
-	"time"
 
 	"github.com/aliasliao/shadow/model"
+	"v2ray.com/core/infra/control"
 )
 
 type Shadow interface {
@@ -199,23 +198,23 @@ func decodeSSLink(link string) (*Shadowsocks, error) {
 }
 
 func loadRaw(url string, cache bool) ([]byte, error) {
-	var raw []byte
-	CacheFile := os.TempDir() + "/" + base64.RawURLEncoding.EncodeToString([]byte(url))
-	if _, err := os.Stat(CacheFile); cache && !os.IsNotExist(err) {
-		log.Println("Loading from cache...")
-		raw, _ = ioutil.ReadFile(CacheFile)
-	} else {
-		log.Println("Loading from web...")
-		res, err := (&http.Client{Timeout: 600 * time.Second}).Get(url)
-		if err != nil {
-			return nil, err
+	if cache {
+		CacheFile := os.TempDir() + "/" + base64.RawURLEncoding.EncodeToString([]byte(url))
+		if _, err := os.Stat(CacheFile); !os.IsNotExist(err) {
+			log.Println("Loading from cache...")
+			return ioutil.ReadFile(CacheFile)
+		} else {
+			log.Println("Loading from web...")
+			raw, err := control.FetchHTTPContent(url)
+			if err != nil {
+				return nil, err
+			}
+			ioutil.WriteFile(CacheFile, raw, 0755)
+			log.Println("File saved to", CacheFile)
+			return raw, nil
 		}
-		defer res.Body.Close()
-		raw, _ = ioutil.ReadAll(res.Body)
-		ioutil.WriteFile(CacheFile, raw, 0755)
-		log.Println("File saved to", CacheFile)
 	}
-	return raw, nil
+	return control.FetchHTTPContent(url)
 }
 
 func parseSSR(url string, cache bool) (Shadow, error) {
