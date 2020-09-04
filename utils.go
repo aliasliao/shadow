@@ -7,14 +7,15 @@ import (
 	"fmt"
 	"io/ioutil"
 	"log"
+	"net/http"
 	"net/url"
 	"os"
 	"regexp"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/aliasliao/shadow/model"
-	"v2ray.com/core/infra/control"
 )
 
 type ShadowsocksR struct {
@@ -182,6 +183,17 @@ func decodeSSLink(link string) (*Shadowsocks, error) {
 	}, nil
 }
 
+// fetchHTTPContent dials https for remote content
+func fetchHTTPContent(target string) ([]byte, error) {
+	res, err := (&http.Client{Timeout: 30 * time.Second}).Get(target)
+	if err != nil {
+		return nil, err
+	}
+	defer res.Body.Close()
+	content, _ := ioutil.ReadAll(res.Body)
+	return content, nil
+}
+
 func loadRaw(url string, cache bool) ([]byte, error) {
 	if cache {
 		CacheFile := os.TempDir() + "/" + base64.RawURLEncoding.EncodeToString([]byte(url))
@@ -190,7 +202,7 @@ func loadRaw(url string, cache bool) ([]byte, error) {
 			return ioutil.ReadFile(CacheFile)
 		} else {
 			log.Println("Loading from web...")
-			raw, err := control.FetchHTTPContent(url)
+			raw, err := fetchHTTPContent(url)
 			if err != nil {
 				return nil, err
 			}
@@ -199,7 +211,7 @@ func loadRaw(url string, cache bool) ([]byte, error) {
 			return raw, nil
 		}
 	}
-	return control.FetchHTTPContent(url)
+	return fetchHTTPContent(url)
 }
 
 func parseSSR(url string, cache bool) ([]*ShadowsocksR, error) {
