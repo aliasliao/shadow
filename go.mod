@@ -8,4 +8,4 @@ require (
 	v2ray.com/core v0.0.0-00010101000000-000000000000
 )
 
-replace v2ray.com/core => github.com/aliasliao/v2ray-core v1.24.5-0.20200903151501-dc61c1a1b5a9
+replace v2ray.com/core => github.com/v2ray/v2ray-core v0.0.0-20200902085546-b6d78428f3c9
