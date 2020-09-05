@@ -211,6 +211,7 @@ func loadRaw(url string, cache bool) ([]byte, error) {
 			return raw, nil
 		}
 	}
+	log.Println("Loading from web...")
 	return fetchHTTPContent(url)
 }
 
