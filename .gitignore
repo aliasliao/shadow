@@ -1,6 +1,5 @@
 .idea
 *.exe
 origins.txt
-*.pb.go
 *config.json
 **/output

@@ -8,6 +8,8 @@ import "model/shadowsocks.proto";
 message Config {
     repeated InboundObject inbounds = 1;
     repeated OutboundObject outbounds = 2;
+    ApiObject api = 3;
+    RoutingObject routing = 4;
 }
 
 message InboundObject {
@@ -16,13 +18,38 @@ message InboundObject {
         repeated string destOverride = 2;
     }
 
-    uint32 port = 1;
-    string listen = 2;
-    string protocol = 3;
+    string protocol = 1;
+    uint32 port = 2;
+    string listen = 3;
     ShadowsocksInboundConfigurationObject settings = 4;
-    SniffingObject sniffing = 5;
+    string tag = 5;
+    SniffingObject sniffing = 6;
 }
 message OutboundObject {
     string protocol = 1;
-    ShadowsocksOutboundConfigurationObject settings = 2;
+    string tag = 2;
+    ShadowsocksOutboundConfigurationObject settings = 3;
+}
+
+message ApiObject {
+    string tag = 1;
+    repeated string services = 2;
+}
+
+message RoutingObject {
+    message RuleObject {
+        repeated string domain = 1;
+        repeated string ip = 2;
+        string port = 3;
+        string network = 4;
+        repeated string source = 5;
+        repeated string inboundTag = 6;
+        repeated string protocol = 7;
+        string attrs = 8;
+        string outboundTag = 9;
+        string balancerTag = 10;
+        string type = 11;
+    }
+
+    repeated RuleObject rules = 1;
 }

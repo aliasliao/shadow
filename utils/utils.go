@@ -327,6 +327,12 @@ func ssToConfig(sss []*Shadowsocks) *model.Config {
 				Enabled:      true,
 				DestOverride: []string{"http", "tls"},
 			},
+		}, {
+			Tag:      "grpc-inbound",
+			Protocol: "http",
+			Port:     4396,
+			Listen:   "127.0.0.1",
+			Settings: nil,
 		}},
 		Outbounds: []*model.OutboundObject{{
 			Protocol: "shadowsocks",
@@ -334,6 +340,21 @@ func ssToConfig(sss []*Shadowsocks) *model.Config {
 				Servers: servers,
 			},
 		}},
+		Api: &model.ApiObject{
+			Tag: "grpc-outbound",
+			Services: []string{
+				"HandlerService",
+				"StatsService",
+				"LoggerService",
+			},
+		},
+		Routing: &model.RoutingObject{
+			Rules: []*model.RoutingObject_RuleObject{{
+				Type:        "field",
+				InboundTag:  []string{"grpc-inbound"},
+				OutboundTag: "grpc-outbound",
+			}},
+		},
 	}
 
 	return config
