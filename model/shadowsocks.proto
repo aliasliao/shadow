@@ -42,12 +42,16 @@ message ShadowsocksOutboundConfigurationObject {
     message ServerObject {
       string email = 1;
       string address = 2;
-      uint32 port = 3;
-      string method = 4; // Method
-      string password = 5;
-      bool ota = 6;
-      uint32 level = 7;
+        uint32 port = 3;
+        string method = 4; // Method
+        string password = 5;
+        bool ota = 6;
+        uint32 level = 7;
     }
 
     repeated ServerObject servers = 1;
+}
+
+message HTTPInboundConfigurationObject {
+    uint32 timeout = 1;
 }

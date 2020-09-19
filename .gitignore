@@ -1,5 +1,5 @@
 .idea
-*.exe
 origins.txt
 *config.json
+**/build
 **/output

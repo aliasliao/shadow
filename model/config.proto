@@ -3,7 +3,7 @@ syntax = "proto3";
 package model;
 option go_package = "model";
 
-import "model/shadowsocks.proto";
+import "google/protobuf/any.proto";
 
 message Config {
     repeated InboundObject inbounds = 1;
@@ -21,14 +21,14 @@ message InboundObject {
     string protocol = 1;
     uint32 port = 2;
     string listen = 3;
-    ShadowsocksInboundConfigurationObject settings = 4;
+    google.protobuf.Any settings = 4;
     string tag = 5;
     SniffingObject sniffing = 6;
 }
 message OutboundObject {
     string protocol = 1;
     string tag = 2;
-    ShadowsocksOutboundConfigurationObject settings = 3;
+    google.protobuf.Any settings = 3;
 }
 
 message ApiObject {

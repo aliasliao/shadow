@@ -16,6 +16,8 @@ import (
 	"time"
 
 	"github.com/aliasliao/shadow/model"
+	"github.com/golang/protobuf/ptypes"
+	"github.com/golang/protobuf/ptypes/any"
 )
 
 type ShadowsocksR struct {
@@ -332,13 +334,25 @@ func ssToConfig(sss []*Shadowsocks) *model.Config {
 			Protocol: "http",
 			Port:     4396,
 			Listen:   "127.0.0.1",
-			Settings: nil,
+			Settings: (func() *any.Any {
+				ret, err := ptypes.MarshalAny(&model.HTTPInboundConfigurationObject{
+					Timeout: 5,
+				})
+				if err != nil {
+				}
+				return ret
+			})(),
 		}},
 		Outbounds: []*model.OutboundObject{{
 			Protocol: "shadowsocks",
-			Settings: &model.ShadowsocksOutboundConfigurationObject{
-				Servers: servers,
-			},
+			Settings: (func() *any.Any {
+				ret, err := ptypes.MarshalAny(&model.ShadowsocksOutboundConfigurationObject{
+					Servers: servers,
+				})
+				if err != nil {
+				}
+				return ret
+			})(),
 		}},
 		Api: &model.ApiObject{
 			Tag: "grpc-outbound",
