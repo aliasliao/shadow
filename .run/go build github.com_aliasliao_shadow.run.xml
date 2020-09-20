@@ -1,10 +1,11 @@
 <component name="ProjectRunConfigurationManager">
-    <configuration default="false" name="build and rum" type="GoApplicationRunConfiguration"
+    <configuration default="false" name="build &amp; generate" type="GoApplicationRunConfiguration"
                    factoryName="Go Application" show_console_on_std_err="true" show_console_on_std_out="true">
         <module name="shadow"/>
         <working_directory value="$PROJECT_DIR$"/>
         <go_parameters value="-i -o build/shadow.exe"/>
-        <parameters value="-origin https://losadhwselfff2332dasd.xyz/link/dFfta3GbZV3bXEV2?sub=2&amp;cache=true"/>
+        <parameters
+                value="-origin https://losadhwselfff2332dasd.xyz/link/dFfta3GbZV3bXEV2?sub=2&amp;cache=true&amp;loglevel=debug"/>
         <kind value="PACKAGE"/>
         <filePath value="$PROJECT_DIR$"/>
         <package value="github.com/aliasliao/shadow"/>

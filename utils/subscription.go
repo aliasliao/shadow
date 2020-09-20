@@ -9,6 +9,8 @@ import (
 
 func GetSubscriptionSS(target string) ([]byte, error) {
 	cache := false
+	options := &options{loglevel: "warning"}
+
 	u, err := url.Parse(target)
 	if err != nil {
 		return nil, err
@@ -17,7 +19,11 @@ func GetSubscriptionSS(target string) ([]byte, error) {
 	if query.Get("cache") == "true" {
 		cache = true
 	}
+	if len(query.Get("loglevel")) > 0 {
+		options.loglevel = query.Get("loglevel")
+	}
 	query.Del("cache")
+	query.Del("loglevel")
 	u.RawQuery = query.Encode()
 	log.Printf("Normalized: %v\n", u.String())
 
@@ -26,7 +32,7 @@ func GetSubscriptionSS(target string) ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
-	config, err := (&jsonpb.Marshaler{}).MarshalToString(ssToConfig(shadowsocksList))
+	config, err := (&jsonpb.Marshaler{}).MarshalToString(ssToConfig(shadowsocksList, options))
 	if err != nil {
 		return nil, err
 	}

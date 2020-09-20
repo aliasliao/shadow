@@ -50,6 +50,10 @@ type Shadowsocks struct {
 	remarks      string
 }
 
+type options struct {
+	loglevel string
+}
+
 func safeDecode(raw []byte) []byte {
 	var ret []byte
 	safeLen := len(raw) - len(raw)%4
@@ -305,7 +309,7 @@ func parseSS(url string, cache bool) ([]*Shadowsocks, error) {
 	return list, nil
 }
 
-func ssToConfig(sss []*Shadowsocks) *model.Config {
+func ssToConfig(sss []*Shadowsocks, options *options) *model.Config {
 	var servers []*model.ShadowsocksOutboundConfigurationObject_ServerObject
 	for _, ss := range sss {
 		servers = append(servers, &model.ShadowsocksOutboundConfigurationObject_ServerObject{
@@ -370,7 +374,7 @@ func ssToConfig(sss []*Shadowsocks) *model.Config {
 			}},
 		},
 		Log: &model.LogObject{
-			Loglevel: "debug",
+			Loglevel: options.loglevel,
 		},
 	}
 
