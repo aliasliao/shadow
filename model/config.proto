@@ -10,6 +10,7 @@ message Config {
     repeated OutboundObject outbounds = 2;
     ApiObject api = 3;
     RoutingObject routing = 4;
+    LogObject log = 5;
 }
 
 message InboundObject {
@@ -52,4 +53,10 @@ message RoutingObject {
     }
 
     repeated RuleObject rules = 1;
+}
+
+message LogObject {
+    string access = 1;
+    string error = 2;
+    string loglevel = 3;
 }

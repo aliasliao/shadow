@@ -3,39 +3,13 @@ syntax = "proto3";
 package model;
 option go_package = "model";
 
-enum Protocol {
-    Shadowsocks = 0;
-    Blackhole = 1;
-    Dokodemo_door = 2;
-    Freedom = 3;
-    HTTP = 4;
-    MTProto = 5;
-    Socks = 6;
-    VMess = 7;
-}
-enum Method {
-    aes_256_cfb = 0;
-    aes_128_cfb = 1;
-    chacha20 = 2;
-    chacha20_ietf = 3;
-    aes_256_gcm = 4;
-    aes_128_gcm = 5;
-    chacha20_poly1305 = 6;
-}
-
 message ShadowsocksInboundConfigurationObject {
-    enum Network {
-        tcp = 0;
-        udp = 1;
-        tcp_udp = 2;
-    }
-
     string email = 1;
-    Method method = 2;
-    string password = 3;
+  string method = 2;
+  string password = 3;
     uint32 level = 4;
-    bool ota = 5;
-    Network network = 6;
+  bool ota = 5;
+  string network = 6;
 }
 
 message ShadowsocksOutboundConfigurationObject {
@@ -46,12 +20,20 @@ message ShadowsocksOutboundConfigurationObject {
         string method = 4; // Method
         string password = 5;
         bool ota = 6;
-        uint32 level = 7;
+      uint32 level = 7;
     }
 
-    repeated ServerObject servers = 1;
+  repeated ServerObject servers = 1;
 }
 
 message HTTPInboundConfigurationObject {
-    uint32 timeout = 1;
+  uint32 timeout = 1;
+}
+
+message DokodemoInboundConfigurationObject {
+  string address = 1;
+  uint32 port = 2;
+  string network = 3;
+  uint32 timeout = 4;
+  bool followRedirect = 5;
 }

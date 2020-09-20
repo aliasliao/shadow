@@ -330,13 +330,13 @@ func ssToConfig(sss []*Shadowsocks) *model.Config {
 				DestOverride: []string{"http", "tls"},
 			},
 		}, {
-			Tag:      "grpc-inbound",
-			Protocol: "http",
-			Port:     4396,
+			Tag:      "api-in",
+			Protocol: "dokodemo-door",
+			Port:     8080,
 			Listen:   "127.0.0.1",
 			Settings: (func() *any.Any {
-				ret, err := ptypes.MarshalAny(&model.HTTPInboundConfigurationObject{
-					Timeout: 5,
+				ret, err := ptypes.MarshalAny(&model.DokodemoInboundConfigurationObject{
+					Address: "127.0.0.1",
 				})
 				if err != nil {
 				}
@@ -355,7 +355,7 @@ func ssToConfig(sss []*Shadowsocks) *model.Config {
 			})(),
 		}},
 		Api: &model.ApiObject{
-			Tag: "grpc-outbound",
+			Tag: "api-out",
 			Services: []string{
 				"HandlerService",
 				"StatsService",
@@ -365,9 +365,12 @@ func ssToConfig(sss []*Shadowsocks) *model.Config {
 		Routing: &model.RoutingObject{
 			Rules: []*model.RoutingObject_RuleObject{{
 				Type:        "field",
-				InboundTag:  []string{"grpc-inbound"},
-				OutboundTag: "grpc-outbound",
+				InboundTag:  []string{"api-in"},
+				OutboundTag: "api-out",
 			}},
+		},
+		Log: &model.LogObject{
+			Loglevel: "debug",
 		},
 	}
 

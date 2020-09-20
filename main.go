@@ -17,5 +17,5 @@ func main() {
 	if err != nil {
 		log.Fatalln("marshal error:", err)
 	}
-	ioutil.WriteFile(*originType+"_config.json", config, 0755)
+	ioutil.WriteFile("build/"+*originType+"_config.json", config, 0755)
 }
