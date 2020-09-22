@@ -361,9 +361,8 @@ func ssToConfig(sss []*Shadowsocks, options *options) *model.Config {
 		Api: &model.ApiObject{
 			Tag: "api-out",
 			Services: []string{
-				"HandlerService",
 				"StatsService",
-				"LoggerService",
+				"AppService",
 			},
 		},
 		Routing: &model.RoutingObject{
