@@ -363,6 +363,7 @@ func ssToConfig(sss []*Shadowsocks, options *options) *model.Config {
 			Services: []string{
 				"StatsService",
 				"AppService",
+				"LoggerService",
 			},
 		},
 		Routing: &model.RoutingObject{
@@ -373,6 +374,8 @@ func ssToConfig(sss []*Shadowsocks, options *options) *model.Config {
 			}},
 		},
 		Log: &model.LogObject{
+			Access:   "none",
+			Error:    "./v2ray.log",
 			Loglevel: options.loglevel,
 		},
 	}
