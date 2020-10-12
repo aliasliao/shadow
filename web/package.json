@@ -4,11 +4,17 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "build": "esbuild --bundle --outfile=output/index.js --loader:.js=js --target=es2018 index.js",
-    "deploy": "scp output/index.js admin@router.asus.com:/tmp/mnt/liao/addons/shadow/index.js",
+    "build": "esbuild --bundle --minify --define:process.env.NODE_ENV='production' --outfile=output/index.js main.tsx",
+    "deploy": "scp index.asp admin@router.asus.com:/tmp/mnt/liao/addons/shadow/index.asp && scp output/index.js admin@router.asus.com:/tmp/mnt/liao/addons/shadow/index.js",
     "all": "npm run build && npm run deploy"
   },
   "keywords": [],
   "author": "",
-  "license": "ISC"
+  "license": "ISC",
+  "dependencies": {
+    "@types/react": "^16.9.52",
+    "@types/react-dom": "^16.9.8",
+    "react": "^16.13.1",
+    "react-dom": "^16.13.1"
+  }
 }

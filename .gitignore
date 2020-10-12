@@ -1,4 +1,3 @@
 .idea
 origins.txt
-**/build
-**/output
+build
