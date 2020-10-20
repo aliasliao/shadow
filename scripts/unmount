@@ -3,7 +3,7 @@
 ### uninstall shadow
 if [ "$1" = "/tmp/mnt/liao" ]
 then
-  logger -t "unmount" "Uninstalling shadow..."
-  /tmp/mnt/liao/addons/shadow/uninstall.sh 2>&1 | logger -t "shadow"
+  logger -t "[unmount]" "Uninstalling shadow..."
+  /tmp/mnt/liao/shadow/uninstall.sh 2>&1 | logger -t "shadow"
 fi
 

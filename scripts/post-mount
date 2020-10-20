@@ -3,7 +3,7 @@
 ### install shadow
 if [ "$1" = "/tmp/mnt/liao" ]
 then
-  logger -t "post-mount" "Installing shadow..."
-  /tmp/mnt/liao/addons/shadow/install.sh 2>&1 | logger -t "shadow"
+  logger -t "[post-mount]" "Installing shadow..."
+  /tmp/mnt/liao/shadow/install.sh 2>&1 | logger -t "shadow"
 fi
 

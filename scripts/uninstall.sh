@@ -1,4 +1,4 @@
 #!/bin/sh
 
-logger -t "shadow" "Uninstalling..."
+echo "Uninstalling..."
 

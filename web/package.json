@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "build": "esbuild --bundle --minify --define:process.env.NODE_ENV='production' --outfile=output/index.js main.tsx",
-    "deploy": "scp index.asp admin@router.asus.com:/tmp/mnt/liao/addons/shadow/index.asp && scp output/index.js admin@router.asus.com:/tmp/mnt/liao/addons/shadow/index.js",
+    "deploy": "scp index.asp admin@router.asus.com:/tmp/mnt/liao/shadow/index.asp && scp output/index.js admin@router.asus.com:/tmp/mnt/liao/shadow/index.js",
     "all": "npm run build && npm run deploy"
   },
   "keywords": [],
