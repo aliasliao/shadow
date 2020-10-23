@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport"
+        content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>test shadow</title>
+  <script>
+    const host = 'http://router.asus.com:3000'
+    function startApp() {
+      fetch(`${host}/startApp`, {
+        headers: {
+          'Content-Type': 'application/json;charset=utf-8',
+          'Accept': 'application/json;charset=utf-8',
+        },
+        method: 'POST',
+        credentials: "include",
+        body: JSON.stringify({
+          "url": "https://losadhwselfff2332dasd.xyz/link/dFfta3GbZV3bXEV2?sub=2",
+          "loglevel": "debug",
+          "cache": true
+        }),
+      })
+    }
+    function stopApp() {
+      fetch(`${host}/stopApp`, {
+        headers: {
+          'Content-Type': 'application/json;charset=utf-8',
+          'Accept': 'application/json;charset=utf-8',
+        },
+        method: 'POST',
+        credentials: "include",
+        body: '{}'
+      })
+    }
+    function getLog() {
+      fetch(`${host}/getLog`, {
+        headers: {
+          'Content-Type': 'application/json;charset=utf-8',
+          'Accept': 'application/json;charset=utf-8',
+        },
+        method: 'GET',
+        credentials: "include",
+      })
+    }
+    function getStats() {
+      fetch(`${host}/getStats`, {
+        headers: {
+          'Content-Type': 'application/json;charset=utf-8',
+          'Accept': 'application/json;charset=utf-8',
+        },
+        method: 'GET',
+        // credentials: "include",
+      })
+    }
+  </script>
+</head>
+<body>
+
+<button onclick="startApp()">Start App</button>
+<button onclick="stopApp()">Stop App</button>
+<button onclick="getLog()">Get Log</button>
+<button onclick="getStats()">Get Stats</button>
+
+</body>
+</html>
