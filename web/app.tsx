@@ -1,6 +1,6 @@
 import * as React from 'react'
 import { useEffect, useState } from 'react'
-import { HOST, noop } from './utils'
+import { noop, http } from './utils'
 
 export default function App() {
   return (
@@ -24,8 +24,7 @@ function Stats() {
     Uptime: number
   } | null>(null)
   const [error, setError] = useState<Error | null>(null)
-  const getStats = () => fetch(`${HOST}/getStats`)
-    .then(res => res.json())
+  const getStats = () => http.get('/getStats')
     .then(data => setData(data))
     .catch(error => setError(error))
   useEffect(() => { getStats().then(noop) }, [])
@@ -60,13 +59,7 @@ function StartApp() {
     url: string,
     cache: boolean,
     loglevel: string,
-  }) => fetch(`${HOST}/startApp`, {
-    method: 'POST',
-    body: JSON.stringify(values),
-    headers: {
-      'Content-Type': 'application/json;charset=utf-8',
-    },
-  }).then(res => res.json())
+  }) => http.post('/startApp', {})
     .then(data => setData(data))
     .catch(error => setError(error))
 

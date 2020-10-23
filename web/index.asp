@@ -10,6 +10,10 @@
 <title>Shadow</title>
 <link rel="stylesheet" type="text/css" href="index_style.css">
 <link rel="stylesheet" type="text/css" href="form_style.css">
+<script src="https://cdn.jsdelivr.net/npm/react@16.13.1/umd/react.development.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/react-dom@16.13.1/umd/react-dom.development.js"></script>
+<!--<script src="https://cdn.jsdelivr.net/npm/react@17.0.1/umd/react.production.min.js"></script>-->
+<!--<script src="https://cdn.jsdelivr.net/npm/react-dom@16.13.1/umd/react-dom.production.min.js"></script>-->
 <script type="text/javascript" src="/state.js"></script>
 <script type="text/javascript" src="/general.js"></script>
 <script type="text/javascript" src="/popup.js"></script>
@@ -53,6 +57,13 @@
 
 <script>
   show_menu()
+
+  function require(module) {
+    return {
+      'react': React,
+      'react-dom': ReactDOM,
+    }[module]
+  }
 </script>
 <script type="text/javascript" src="/user/shadowApp.js" async></script>
 </body>
