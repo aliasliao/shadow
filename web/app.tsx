@@ -1,13 +1,15 @@
 import * as React from 'react'
 import { useEffect, useState } from 'react'
 import { noop, http } from './utils'
+import cx from 'classnames'
+import { s } from './styles'
 
 export default function App() {
   return (
-    <div>
+    <>
       <Stats />
       <StartApp />
-    </div>
+    </>
   )
 }
 
@@ -29,23 +31,22 @@ function Stats() {
     .catch(error => setError(error))
   useEffect(() => { getStats().then(noop) }, [])
 
-  if (data === null && error === null) {
-    return <>Loading status...</>
-  }
   return (
-    <div>
+    <div className={cx(s.w100, s.light)}>
+      <div className={cx(s.bgSecondary, s.bd, s.bdDark, s.fontBolder, s.light, s.p4, s.pl12)}>Stats</div>
+      {data === null && error === null && (
+        <div className={cx(s.p8, s.pl12, s.bgInfo)}>Loading Status...</div>
+      )}
       {error && (
-        <div>{error.message}</div>
+        <div className={cx(s.p8, s.bgDanger)}>{error.message}</div>
       )}
       {data && (
-        <div>
-          {Object.keys(data).map(key => (
-            <div key={key} className="d-flex">
-              <div>{key}</div>
-              <div>{data[key]}</div>
-            </div>
-          ))}
-        </div>
+        Object.keys(data).map(key => (
+          <div key={key} className={cx(s.bd, s.bdDark, s.dFlex, s.flexRow)}>
+            <div className={cx(s.p4)} style={{ width: '35%' }}>{key}</div>
+            <div className={cx(s.bdLeft, s.bdDark, s.p4)}>{data[key]}</div>
+          </div>
+        ))
       )}
       <button onClick={() => getStats()}>Get Stats</button>
     </div>
@@ -63,9 +64,6 @@ function StartApp() {
     .then(data => setData(data))
     .catch(error => setError(error))
 
-  if (data === null && error === null) {
-    return <>Starting App...</>
-  }
   return (
     // @ts-ignore
     <form onSubmit={e => startApp(e.target)}>
@@ -85,6 +83,9 @@ function StartApp() {
           ))}
         </select>
       </div>
+      {data === null && error === null && (
+        <>Starting App...</>
+      )}
       <button type="submit">Submit</button>
     </form>
   )

@@ -4,17 +4,21 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "buildDev": "esbuild --bundle --external:react --external:react-dom --outfile=output/index.js main.tsx",
-    "build": "esbuild --bundle --external:react --external:react-dom --minify --outfile=output/index.js main.tsx",
+    "buildDev": "esbuild --define:process.env.NODE_ENV='development' --bundle --external:react --external:react-dom --outfile=output/index.js main.tsx",
+    "buildPro": "esbuild --define:process.env.NODE_ENV='production' --minify --bundle --external:react --external:react-dom --outfile=output/index.js main.tsx",
     "deploy": "scp index.asp admin@router.asus.com:/tmp/mnt/liao/shadow/index.asp && scp output/index.js admin@router.asus.com:/tmp/mnt/liao/shadow/index.js",
-    "all": "npm run build && npm run deploy"
+    "allDev": "npm run buildDev && npm run deploy",
+    "allPro": "npm run buildPro && npm run deploy"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@types/classnames": "^2.2.10",
     "@types/react": "^16.9.52",
     "@types/react-dom": "^16.9.8",
+    "classnames": "^2.2.6",
+    "emotion": "^10.0.27",
     "react": "^16.13.1",
     "react-dom": "^16.13.1"
   }
