@@ -3,13 +3,14 @@ import { css } from 'emotion'
 
 const low = str => (str.charAt(0).toLowerCase() + str.substring(1))
 const up = str => (str.charAt(0).toUpperCase() + str.substring(1))
+//
 
 export const s: {
   [key: string]: string,
 } = {
   ...Object.fromEntries(
     ['p', 'm'].map(
-      type => [2,4,8,12,16].map(size => {
+      type => [-4,-2,-1,1,2,4,8,12,16].map(size => {
         const t = { p : 'padding', m: 'margin' }[type]
         return Object.entries({
           [`${type}${size}`]: css`${t}: ${size}px`,

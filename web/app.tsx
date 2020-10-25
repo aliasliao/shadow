@@ -26,23 +26,24 @@ function Stats() {
     Uptime: number
   } | null>(null)
   const [error, setError] = useState<Error | null>(null)
+
   const getStats = () => http.get('/getStats')
-    .then(data => setData(data))
-    .catch(error => setError(error))
+    .then(data => { setData(data); setError(null) })
+    .catch(error => { setData(null); setError(error) })
   useEffect(() => { getStats().then(noop) }, [])
 
   return (
     <div className={cx(s.w100, s.light)}>
-      <div className={cx(s.bgSecondary, s.bd, s.bdDark, s.fontBolder, s.light, s.p4, s.pl12)}>Stats</div>
+      <div className={cx(s.bd, s.bdDark, s.bgSecondary, s.fontBolder, s.light, s.p4, s.pl12)}>Stats</div>
       {data === null && error === null && (
-        <div className={cx(s.p8, s.pl12, s.bgInfo)}>Loading Status...</div>
+        <div className={cx(s.bd, s.bdDark, s.bgInfo, s['mt-1'], s.p8, s.pl12)}>Loading Status...</div>
       )}
       {error && (
-        <div className={cx(s.p8, s.bgDanger)}>{error.message}</div>
+        <div className={cx(s.bd, s.bdDark, s.bgDanger, s['mt-1'], s.p8, s.pl12)}>{error.message}</div>
       )}
       {data && (
         Object.keys(data).map(key => (
-          <div key={key} className={cx(s.bd, s.bdDark, s.dFlex, s.flexRow)}>
+          <div key={key} className={cx(s.bd, s.bdDark, s['mt-1'], s.dFlex, s.flexRow)}>
             <div className={cx(s.p4)} style={{ width: '35%' }}>{key}</div>
             <div className={cx(s.bdLeft, s.bdDark, s.p4)}>{data[key]}</div>
           </div>
