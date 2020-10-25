@@ -2,7 +2,7 @@ import * as React from 'react'
 import { useEffect, useState } from 'react'
 import { noop, http } from './utils'
 import cx from 'classnames'
-import { s } from './styles'
+import { cardHeader, s } from './styles'
 
 export default function App() {
   return (
@@ -34,22 +34,24 @@ function Stats() {
 
   return (
     <div className={cx(s.w100, s.light)}>
-      <div className={cx(s.bd, s.bdDark, s.bgSecondary, s.fontBolder, s.light, s.p4, s.pl12)}>Stats</div>
+      <div className={cx(s.bd, s.bgSecondary, s.fontBolder, s.light, s.p4, s.pl12, cardHeader)}>Stats</div>
       {data === null && error === null && (
-        <div className={cx(s.bd, s.bdDark, s.bgInfo, s['mt-1'], s.p8, s.pl12)}>Loading Status...</div>
+        <div className={cx(s.bd, s.bgInfo, s['mt-1'], s.p8, s.pl12)}>Loading Status...</div>
       )}
       {error && (
-        <div className={cx(s.bd, s.bdDark, s.bgDanger, s['mt-1'], s.p8, s.pl12)}>{error.message}</div>
+        <div className={cx(s.bd, s.bgDanger, s['mt-1'], s.p8, s.pl12)}>{error.message}</div>
       )}
       {data && (
         Object.keys(data).map(key => (
-          <div key={key} className={cx(s.bd, s.bdDark, s['mt-1'], s.dFlex, s.flexRow)}>
+          <div key={key} className={cx(s.bd, s['mt-1'], s.dFlex, s.flexRow)}>
             <div className={cx(s.p4)} style={{ width: '35%' }}>{key}</div>
-            <div className={cx(s.bdLeft, s.bdDark, s.p4)}>{data[key]}</div>
+            <div className={cx(s.bdLeft, s.p4)}>{data[key]}</div>
           </div>
         ))
       )}
-      <button onClick={() => getStats()}>Get Stats</button>
+      <div className={cx(s.dFlex, s.justifyCenter, s.bd, s.p8, s['mt-1'])}>
+        <button onClick={() => getStats()}>Get Stats</button>
+      </div>
     </div>
   )
 }
@@ -70,15 +72,15 @@ function StartApp() {
     <form onSubmit={e => startApp(e.target)}>
       <div>
         <label htmlFor="url">url</label>
-        <input type="text" id="url" />
+        <input type="text" name="url" />
       </div>
       <div>
         <label htmlFor="cache">cache</label>
-        <input type="checkbox" id="cache" />
+        <input type="checkbox" name="cache" />
       </div>
       <div>
         <label htmlFor="loglevel">loglevel</label>
-        <select id="loglevel">
+        <select name="loglevel">
           {['warning', 'error', 'debug'].map(level => (
             <option key={level} value={level}>{level}</option>
           ))}
