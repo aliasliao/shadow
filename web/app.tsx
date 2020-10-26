@@ -1,15 +1,15 @@
 import * as React from 'react'
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { noop, http } from './utils'
 import cx from 'classnames'
 import { cardHeader, s } from './styles'
 
 export default function App() {
   return (
-    <>
+    <div className={s.vGap12}>
       <Stats />
       <StartApp />
-    </>
+    </div>
   )
 }
 
@@ -26,70 +26,111 @@ function Stats() {
     Uptime: number
   } | null>(null)
   const [error, setError] = useState<Error | null>(null)
+  const [loading, setLoading] = useState(false)
 
-  const getStats = () => http.get('/getStats')
-    .then(data => { setData(data); setError(null) })
-    .catch(error => { setData(null); setError(error) })
+  const getStats = () => http.noop(setLoading(true)).get('/getStats')
+    .then(data => setData(data))
+    .catch(error => setError(error))
+    .finally(() => setLoading(false))
   useEffect(() => { getStats().then(noop) }, [])
 
+  const stopApp = () => http.noop(setLoading(true)).post('/stopApp')
+    .catch(error => setError(error))
+    .finally(() => setLoading(false))
+
   return (
-    <div className={cx(s.w100, s.light)}>
-      <div className={cx(s.bd, s.bgSecondary, s.fontBolder, s.light, s.p4, s.pl12, cardHeader)}>Stats</div>
-      {data === null && error === null && (
-        <div className={cx(s.bd, s.bgInfo, s['mt-1'], s.p8, s.pl12)}>Loading Status...</div>
+    <div className={cx(s.light, s['vGap-1'])}>
+      <div className={cx(s.bd, s.bgSecondary, s.fontBolder, s.light, s.p4, s.pl12, cardHeader)}>
+        Stats
+      </div>
+      {loading && (
+        <div className={cx(s.bd, s.bgInfo, s.p8, s.pl12)}>Loading Status...</div>
       )}
       {error && (
-        <div className={cx(s.bd, s.bgDanger, s['mt-1'], s.p8, s.pl12)}>{error.message}</div>
+        <div className={cx(s.bd, s.bgDanger, s.p8, s.pl12)}>{error.message}</div>
       )}
       {data && (
         Object.keys(data).map(key => (
-          <div key={key} className={cx(s.bd, s['mt-1'], s.dFlex, s.flexRow)}>
-            <div className={cx(s.p4)} style={{ width: '35%' }}>{key}</div>
-            <div className={cx(s.bdLeft, s.p4)}>{data[key]}</div>
+          <div key={key} className={cx(s.bd, s.dFlex, s.flexRow)}>
+            <div className={cx(s.p4, s.dFlex, s.alignItemsCenter)} style={{ width: '35%' }}>{key}</div>
+            <div className={cx(s.bdLeft, s.p4, s.dFlex, s.alignItemsCenter)}>{data[key]}</div>
           </div>
         ))
       )}
-      <div className={cx(s.dFlex, s.justifyCenter, s.bd, s.p8, s['mt-1'])}>
-        <button onClick={() => getStats()}>Get Stats</button>
+      <div className={cx(s.dFlex, s.justifyCenter, s.hGap8, s.bd, s.p8)}>
+        <button onClick={getStats}>Get Stats</button>
+        <button onClick={stopApp}>Stop App</button>
       </div>
     </div>
   )
 }
 
 function StartApp() {
-  const [data, setData] = useState<{} | null>(null)
   const [error, setError] = useState<Error | null>(null)
+  const [loading, setLoading] = useState(false)
   const startApp = (values: {
     url: string,
     cache: boolean,
     loglevel: string,
-  }) => http.post('/startApp', {})
-    .then(data => setData(data))
+  }) => http.noop(setLoading(true)).post('/startApp', values)
     .catch(error => setError(error))
+    .finally(() => setLoading(false))
+
+  const formElement = useRef<HTMLFormElement>(null)
+
+  const handleSubmit = () => {
+    // @ts-ignore
+    const formValues = Object.fromEntries([...new FormData(formElement.current).entries()])
+    startApp({
+      ...formValues as any,
+      cache: formValues.cache === 'on',
+    }).then(noop)
+  }
 
   return (
-    // @ts-ignore
-    <form onSubmit={e => startApp(e.target)}>
-      <div>
-        <label htmlFor="url">url</label>
-        <input type="text" name="url" />
+    <div className={cx(s.light, s['vGap-1'])}>
+      <form ref={formElement} className={s['vGap-1']}>
+        <div className={cx(s.bd, s.bgSecondary, s.fontBolder, s.light, s.p4, s.pl12, cardHeader)}>
+          Start App
+        </div>
+        {loading && (
+          <div className={cx(s.bd, s.bgInfo, s.p8, s.pl12)}>Starting App...</div>
+        )}
+        {error && (
+          <div className={cx(s.bd, s.bgDanger, s.p8, s.pl12)}>{error.message}</div>
+        )}
+        <div className={cx(s.bd, s.dFlex, s.flexRow)}>
+          <div className={cx(s.p4, s.dFlex, s.alignItemsCenter)} style={{ width: '35%' }}>
+            <label htmlFor="url">url</label>
+          </div>
+          <div className={cx(s.bdLeft, s.p4, s.dFlex, s.alignItemsCenter, s.grow)}>
+            <input type="text" name="url" className={s.w100} />
+          </div>
+        </div>
+        <div className={cx(s.bd, s.dFlex, s.flexRow)}>
+          <div className={cx(s.p4, s.dFlex, s.alignItemsCenter)} style={{ width: '35%' }}>
+            <label htmlFor="cache">cache</label>
+          </div>
+          <div className={cx(s.bdLeft, s.p4, s.dFlex, s.alignItemsCenter)}>
+            <input type="checkbox" defaultChecked name="cache" />
+          </div>
+        </div>
+        <div className={cx(s.bd, s.dFlex, s.flexRow)}>
+          <div className={cx(s.p4, s.dFlex, s.alignItemsCenter)} style={{ width: '35%' }}>
+            <label htmlFor="loglevel" defaultValue="warning">loglevel</label>
+          </div>
+          <div className={cx(s.bdLeft, s.p4, s.dFlex, s.alignItemsCenter)}>
+            <select name="loglevel" defaultValue="warning">
+              {['debug', 'info', 'warning', 'error', 'none'].map(level => (
+                <option key={level} value={level}>{level}</option>
+              ))}
+            </select>
+          </div>
+        </div>
+      </form>
+      <div className={cx(s.dFlex, s.justifyCenter, s.bd, s.p8)}>
+        <button onClick={handleSubmit}>Submit</button>
       </div>
-      <div>
-        <label htmlFor="cache">cache</label>
-        <input type="checkbox" name="cache" />
-      </div>
-      <div>
-        <label htmlFor="loglevel">loglevel</label>
-        <select name="loglevel">
-          {['warning', 'error', 'debug'].map(level => (
-            <option key={level} value={level}>{level}</option>
-          ))}
-        </select>
-      </div>
-      {data === null && error === null && (
-        <>Starting App...</>
-      )}
-      <button type="submit">Submit</button>
-    </form>
+    </div>
   )
 }

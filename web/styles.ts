@@ -25,6 +25,19 @@ export const s: {
     ).flat(2)
   ),
   ...Object.fromEntries(
+    ['h', 'v'].map(
+      type => [-1,1,2,4,8,12,16].map(gap => {
+        const margin  = { h: 'left', v: 'top' }[type]
+        return [
+          `${type}Gap${gap}`,
+          css`
+            & > * {margin-${margin}: ${gap}px!important;}
+            & > *:first-child {margin-${margin}: 0!important;}
+          `]
+      })
+    ).flat()
+  ),
+  ...Object.fromEntries(
     [2,4,8,12,16].map(size => [`bdRadius${size}`, css`border-radius: ${size}px!important;`])
   ),
   ...Object.fromEntries(

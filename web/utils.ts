@@ -25,6 +25,7 @@ function factory(
 }
 
 export const http = {
+  noop: (value: any) => http,
   get: factory('GET'),
   post: factory('POST'),
   put: factory('PUT'),
