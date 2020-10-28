@@ -29,7 +29,7 @@ function Stats() {
   const [loading, setLoading] = useState(false)
 
   const getStats = () => http.noop(setLoading(true)).get('/getStats')
-    .then(data => setData(data))
+    .then(data => { setData(data); setError(null) })
     .catch(error => setError(error))
     .finally(() => setLoading(false))
   useEffect(() => { getStats().then(noop) }, [])

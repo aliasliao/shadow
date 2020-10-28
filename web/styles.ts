@@ -3,7 +3,6 @@ import { css } from 'emotion'
 
 const low = str => (str.charAt(0).toLowerCase() + str.substring(1))
 const up = str => (str.charAt(0).toUpperCase() + str.substring(1))
-//
 
 export const s: {
   [key: string]: string,
@@ -89,6 +88,22 @@ export const s: {
 
 export const cardHeader = css`
 background: linear-gradient(to bottom, #92a0a5  0%, #66757C 100%);
+`
+
+export const notificationContainer = css`
+position: fixed;
+width: 100%;
+display: flex;
+flex-direction: column;
+top: 40px;
+z-index: 1000;
+`
+export const notificationInstance = css`
+margin: 16px auto auto;
+&:first-child { margin-top: 0 }
+padding: 8px 12px;
+font-size: 12px;
+box-shadow: 0 3px 6px -4px #333, 0 6px 16px 0 #333, 0 9px 28px 8px #333;
 `
 
 console.log(s)
