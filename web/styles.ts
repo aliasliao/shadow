@@ -1,5 +1,5 @@
 // @ts-ignore
-import { css } from 'emotion'
+import { css, keyframes } from 'emotion'
 
 const low = str => (str.charAt(0).toLowerCase() + str.substring(1))
 const up = str => (str.charAt(0).toUpperCase() + str.substring(1))
@@ -73,6 +73,7 @@ export const s: {
     justifyStart: css`justify-content: start!important;`,
     justifyCenter: css`justify-content: center!important;`,
     justifyEnd: css`justify-content: end!important;`,
+    justifyBetween: css`justify-content: space-between!important;`,
     alignStart: css`align-items: start!important;`,
     alignCenter: css`align-items: center!important;`,
     alignEnd: css`align-items: end!important;`,
@@ -104,6 +105,50 @@ margin: 16px auto auto;
 padding: 8px 12px;
 font-size: 12px;
 box-shadow: 0 3px 6px -4px #333, 0 6px 16px 0 #333, 0 9px 28px 8px #333;
+`
+
+const loadingAnimation1 = keyframes`
+0% {transform: scale(0);}
+100% {transform: scale(1);}
+`
+const loadingAnimation2 = keyframes`
+0% {transform: translate(0, 0);}
+100% {transform: translate(20px, 0);}
+`
+const loadingAnimation3 = keyframes`
+0% {transform: scale(1);}
+100% {transform: scale(0);}
+`
+export const loadingContainer = css`
+display: inline-block;
+position: relative;
+width: 52px;
+height: 12px;
+& div {
+  position: absolute;
+  top: 0;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: #f8f9fa;
+  animation-timing-function: cubic-bezier(0, 1, 1, 0);
+}
+& div:nth-child(1) {
+  left: 0;
+  animation: ${loadingAnimation1} 0.6s infinite;
+}
+& div:nth-child(2) {
+  left: 0;
+  animation: ${loadingAnimation2} 0.6s infinite;
+}
+}
+& div:nth-child(3) {
+  left: 20px;
+  animation: ${loadingAnimation2} 0.6s infinite;
+}
+& div:nth-child(4) {
+  right: 0;
+  animation: ${loadingAnimation3} 0.6s infinite;}
 `
 
 console.log(s)

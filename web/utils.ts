@@ -63,5 +63,5 @@ export const notify = ({ message, type = 'info' }: {
 
   window.setTimeout(() => {
     container.removeChild(span)
-  }, 3000)
+  }, 5000)
 }

@@ -3,6 +3,7 @@ import { useEffect, useRef, useState } from 'react'
 import { noop, http } from './utils'
 import cx from 'classnames'
 import { cardHeader, s } from './styles'
+import { Loading } from './components'
 
 export default function App() {
   return (
@@ -40,12 +41,14 @@ function Stats() {
 
   return (
     <div className={cx(s.light, s['vGap-1'])}>
-      <div className={cx(s.bd, s.bgSecondary, s.fontBolder, s.light, s.p4, s.pl12, cardHeader)}>
-        Stats
+      <div className={cx(
+        s.bd, s.bgSecondary, s.fontBolder, s.light, s.p4, s.pl12,
+        s.dFlex, s.justifyBetween, s.alignCenter,
+        cardHeader,
+      )}>
+        <div>Stats</div>
+        {loading && <Loading />}
       </div>
-      {loading && (
-        <div className={cx(s.bd, s.bgInfo, s.p8, s.pl12)}>Loading Status...</div>
-      )}
       {error && (
         <div className={cx(s.bd, s.bgDanger, s.p8, s.pl12)}>{error.message}</div>
       )}
@@ -90,12 +93,14 @@ function StartApp() {
   return (
     <div className={cx(s.light, s['vGap-1'])}>
       <form ref={formElement} className={s['vGap-1']}>
-        <div className={cx(s.bd, s.bgSecondary, s.fontBolder, s.light, s.p4, s.pl12, cardHeader)}>
-          Start App
+        <div className={cx(
+          s.bd, s.bgSecondary, s.fontBolder, s.light, s.p4, s.pl12,
+          s.dFlex, s.justifyBetween, s.alignCenter,
+          cardHeader,
+        )}>
+          <div>Start App</div>
+          {loading && <Loading />}
         </div>
-        {loading && (
-          <div className={cx(s.bd, s.bgInfo, s.p8, s.pl12)}>Starting App...</div>
-        )}
         {error && (
           <div className={cx(s.bd, s.bgDanger, s.p8, s.pl12)}>{error.message}</div>
         )}
