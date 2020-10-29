@@ -148,7 +148,8 @@ height: 12px;
 }
 & div:nth-child(4) {
   right: 0;
-  animation: ${loadingAnimation3} 0.6s infinite;}
+  animation: ${loadingAnimation3} 0.6s infinite;
+}
 `
 
 console.log(s)
