@@ -10,6 +10,7 @@ import (
 	"net/http"
 	"net/url"
 	"os"
+	"path/filepath"
 	"regexp"
 	"strconv"
 	"strings"
@@ -191,7 +192,7 @@ func decodeSSLink(link string) (*Shadowsocks, error) {
 
 // fetchHTTPContent dials https for remote content
 func fetchHTTPContent(target string) ([]byte, error) {
-	res, err := (&http.Client{Timeout: 30 * time.Second}).Get(target)
+	res, err := (&http.Client{Timeout: 180 * time.Second}).Get(target)
 	if err != nil {
 		return nil, err
 	}
@@ -201,24 +202,23 @@ func fetchHTTPContent(target string) ([]byte, error) {
 }
 
 func loadRaw(url string, cache bool) ([]byte, error) {
-	if cache {
-		CacheFile := os.TempDir() + "/" + base64.RawURLEncoding.EncodeToString([]byte(url))
-		if _, err := os.Stat(CacheFile); !os.IsNotExist(err) {
-			log.Println("Loading from cache...")
-			return ioutil.ReadFile(CacheFile)
-		} else {
-			log.Println("Loading from web...")
-			raw, err := fetchHTTPContent(url)
-			if err != nil {
-				return nil, err
-			}
-			ioutil.WriteFile(CacheFile, raw, 0755)
-			log.Println("File saved to", CacheFile)
-			return raw, nil
-		}
+	exePath, err := os.Executable()
+	if err != nil {
+		return nil, err
+	}
+	cacheFile := filepath.Dir(exePath) + "/" + base64.RawURLEncoding.EncodeToString([]byte(url))
+	if _, err := os.Stat(cacheFile); cache && err == nil {
+		log.Println("Loading from cache...")
+		return ioutil.ReadFile(cacheFile)
 	}
 	log.Println("Loading from web...")
-	return fetchHTTPContent(url)
+	raw, err := fetchHTTPContent(url)
+	if err != nil {
+		return nil, err
+	}
+	ioutil.WriteFile(cacheFile, raw, 0755)
+	log.Println("File saved to", cacheFile)
+	return raw, nil
 }
 
 func parseSSR(url string, cache bool) ([]*ShadowsocksR, error) {

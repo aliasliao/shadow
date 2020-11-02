@@ -17,12 +17,13 @@
         method: 'POST',
         credentials: "include",
         body: JSON.stringify({
-          "url": "https://losadhwselfff2332dasd.xyz/link/dFfta3GbZV3bXEV2?sub=2",
+          "url": "https://losadhwselfff2332dasd.xyz/link/PhFJJKC56BoueFpY?sub=2",
           "loglevel": "debug",
           "cache": true
         }),
       })
     }
+
     function stopApp() {
       fetch(`${host}/stopApp`, {
         headers: {
@@ -44,6 +45,7 @@
         credentials: "include",
       })
     }
+
     function getStats() {
       fetch(`${host}/getStats`, {
         headers: {
@@ -51,7 +53,19 @@
           'Accept': 'application/json;charset=utf-8',
         },
         method: 'GET',
-        // credentials: "include",
+        credentials: "include",
+      })
+    }
+
+    function clearLog() {
+      fetch(`${host}/clearLog`, {
+        headers: {
+          'Content-Type': 'application/json;charset=utf-8',
+          'Accept': 'application/json;charset=utf-8',
+        },
+        method: 'PUT',
+        credentials: "include",
+        body: '{}'
       })
     }
   </script>
@@ -62,6 +76,7 @@
 <button onclick="stopApp()">Stop App</button>
 <button onclick="getLog()">Get Log</button>
 <button onclick="getStats()">Get Stats</button>
+<button onclick="clearLog()">Clear Log</button>
 
 </body>
 </html>
