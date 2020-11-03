@@ -3,31 +3,27 @@ syntax = "proto3";
 package model;
 option go_package = "model";
 
+import "google/protobuf/any.proto";
+
 message ShadowsocksInboundConfigurationObject {
-    string email = 1;
+  string email = 1;
   string method = 2;
   string password = 3;
-    uint32 level = 4;
-  bool ota = 5;
-  string network = 6;
+  uint32 level = 4;
+  string network = 5;
 }
 
 message ShadowsocksOutboundConfigurationObject {
-    message ServerObject {
-      string email = 1;
-      string address = 2;
-        uint32 port = 3;
-        string method = 4; // Method
-        string password = 5;
-        bool ota = 6;
-      uint32 level = 7;
-    }
+  message ServerObject {
+    string email = 1;
+    string address = 2;
+    uint32 port = 3;
+    string method = 4; // Method
+    string password = 5;
+    uint32 level = 6;
+  }
 
   repeated ServerObject servers = 1;
-}
-
-message HTTPInboundConfigurationObject {
-  uint32 timeout = 1;
 }
 
 message DokodemoInboundConfigurationObject {
@@ -36,4 +32,29 @@ message DokodemoInboundConfigurationObject {
   string network = 3;
   uint32 timeout = 4;
   bool followRedirect = 5;
+  uint32 userLevel = 6;
+}
+
+message FreedomOutboundConfigurationObject {
+  string domainStrategy = 1;
+  string redirect = 2;
+  uint32 userLevel = 3;
+}
+
+message StreamSettingsObject {
+  message SockoptObject {
+    uint32 mark = 1;
+    bool tcpFastOpen = 2;
+    string tproxy = 3;
+  }
+  string network = 1;
+  string security = 2;
+  google.protobuf.Any tlsSettings = 3;
+  google.protobuf.Any tcpSettings = 4;
+  google.protobuf.Any kcpSettings = 5;
+  google.protobuf.Any wsSettings = 6;
+  google.protobuf.Any httpSettings = 7;
+  google.protobuf.Any quicSettings = 8;
+  google.protobuf.Any dsSettings = 9;
+  SockoptObject sockopt = 10;
 }

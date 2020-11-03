@@ -318,45 +318,60 @@ func ssToConfig(sss []*Shadowsocks, options *options) *model.Config {
 			Port:     ss.serverPort,
 			Method:   ss.method,
 			Password: ss.password,
-			Ota:      false,
 			Level:    0,
 		})
 	}
 
 	config := &model.Config{
 		Inbounds: []*model.InboundObject{{
-			Port:     1081,
 			Listen:   "127.0.0.1",
-			Protocol: "socks",
-			Settings: nil,
+			Port:     1080,
+			Protocol: "dokodemo-door",
+			Settings: func() *any.Any {
+				ret, _ := ptypes.MarshalAny(&model.DokodemoInboundConfigurationObject{
+					Network:        "tcp,udp",
+					FollowRedirect: true,
+				})
+				return ret
+			}(),
+			StreamSettings: &model.StreamSettingsObject{
+				Sockopt: &model.StreamSettingsObject_SockoptObject{
+					Tproxy: "tproxy",
+				},
+			},
+			Tag: "transparent-in",
 			Sniffing: &model.InboundObject_SniffingObject{
 				Enabled:      true,
 				DestOverride: []string{"http", "tls"},
 			},
 		}, {
-			Tag:      "api-in",
-			Protocol: "dokodemo-door",
-			Port:     8080,
 			Listen:   "127.0.0.1",
-			Settings: (func() *any.Any {
-				ret, err := ptypes.MarshalAny(&model.DokodemoInboundConfigurationObject{
+			Port:     1081,
+			Protocol: "socks",
+			Sniffing: &model.InboundObject_SniffingObject{
+				Enabled:      true,
+				DestOverride: []string{"http", "tls"},
+			},
+		}, {
+			Listen:   "127.0.0.1",
+			Port:     8080,
+			Protocol: "dokodemo-door",
+			Settings: func() *any.Any {
+				ret, _ := ptypes.MarshalAny(&model.DokodemoInboundConfigurationObject{
 					Address: "127.0.0.1",
 				})
-				if err != nil {
-				}
 				return ret
-			})(),
+			}(),
+			Tag: "api-in",
 		}},
 		Outbounds: []*model.OutboundObject{{
 			Protocol: "shadowsocks",
-			Settings: (func() *any.Any {
-				ret, err := ptypes.MarshalAny(&model.ShadowsocksOutboundConfigurationObject{
+			Settings: func() *any.Any {
+				ret, _ := ptypes.MarshalAny(&model.ShadowsocksOutboundConfigurationObject{
 					Servers: servers,
 				})
-				if err != nil {
-				}
 				return ret
-			})(),
+			}(),
 		}},
 		Api: &model.ApiObject{
 			Tag: "api-out",

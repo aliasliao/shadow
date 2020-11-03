@@ -4,6 +4,7 @@ package model;
 option go_package = "model";
 
 import "google/protobuf/any.proto";
+import "model/shadowsocks.proto";
 
 message Config {
     repeated InboundObject inbounds = 1;
@@ -11,6 +12,7 @@ message Config {
     ApiObject api = 3;
     RoutingObject routing = 4;
     LogObject log = 5;
+    DnsObject dns = 6;
 }
 
 message InboundObject {
@@ -19,17 +21,24 @@ message InboundObject {
         repeated string destOverride = 2;
     }
 
-    string protocol = 1;
+    string listen = 1;
     uint32 port = 2;
-    string listen = 3;
+    string protocol = 3;
     google.protobuf.Any settings = 4;
-    string tag = 5;
-    SniffingObject sniffing = 6;
+    StreamSettingsObject streamSettings = 5;
+    string tag = 6;
+    SniffingObject sniffing = 7;
+    google.protobuf.Any allocate = 8;
 }
+
 message OutboundObject {
-    string protocol = 1;
-    string tag = 2;
+    string sendThrough = 1;
+    string protocol = 2;
     google.protobuf.Any settings = 3;
+    string tag = 4;
+    StreamSettingsObject streamSettings = 5;
+    google.protobuf.Any proxySettings = 6;
+    google.protobuf.Any mux = 7;
 }
 
 message ApiObject {
@@ -52,11 +61,27 @@ message RoutingObject {
         string type = 11;
     }
 
-    repeated RuleObject rules = 1;
+    string domainStrategy = 1;
+    repeated RuleObject rules = 2;
+    repeated google.protobuf.Any balancers = 3;
 }
 
 message LogObject {
     string access = 1;
     string error = 2;
     string loglevel = 3;
+}
+
+message DnsObject {
+    message ServerObject {
+        string address = 1;
+        uint32 port = 2;
+        repeated string domains = 3;
+        repeated string expectIPs = 4;
+    }
+
+    map<string, string> hosts = 1;
+    repeated google.protobuf.Any servers = 2; // string | ServerObject
+    string clientIp = 3;
+    string tag = 4;
 }
