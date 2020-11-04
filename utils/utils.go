@@ -322,6 +322,16 @@ func ssToConfig(sss []*Shadowsocks, options *options) *model.Config {
 		})
 	}
 
+	const (
+		transparentIn string = "transparent-in"
+		socksIn              = "socks-in"
+		apiIn                = "api-in"
+		dnsOut               = "dns-out"
+		apiOut               = "api-out"
+		directOut            = "direct-out"
+		proxyOut             = "proxy-out"
+	)
+
 	config := &model.Config{
 		Inbounds: []*model.InboundObject{{
 			Listen:   "127.0.0.1",
@@ -339,7 +349,7 @@ func ssToConfig(sss []*Shadowsocks, options *options) *model.Config {
 					Tproxy: "tproxy",
 				},
 			},
-			Tag: "transparent-in",
+			Tag: transparentIn,
 			Sniffing: &model.InboundObject_SniffingObject{
 				Enabled:      true,
 				DestOverride: []string{"http", "tls"},
@@ -348,6 +358,7 @@ func ssToConfig(sss []*Shadowsocks, options *options) *model.Config {
 			Listen:   "127.0.0.1",
 			Port:     1081,
 			Protocol: "socks",
+			Tag:      socksIn,
 			Sniffing: &model.InboundObject_SniffingObject{
 				Enabled:      true,
 				DestOverride: []string{"http", "tls"},
@@ -362,7 +373,7 @@ func ssToConfig(sss []*Shadowsocks, options *options) *model.Config {
 				})
 				return ret
 			}(),
-			Tag: "api-in",
+			Tag: apiIn,
 		}},
 		Outbounds: []*model.OutboundObject{{
 			Protocol: "shadowsocks",
@@ -372,20 +383,75 @@ func ssToConfig(sss []*Shadowsocks, options *options) *model.Config {
 				})
 				return ret
 			}(),
+			StreamSettings: &model.StreamSettingsObject{
+				Sockopt: &model.StreamSettingsObject_SockoptObject{
+					Mark: 255,
+				},
+			},
+			Tag: proxyOut,
+		}, {
+			Protocol: "freedom",
+			Settings: func() *any.Any {
+				ret, _ := ptypes.MarshalAny(&model.FreedomOutboundConfigurationObject{
+					DomainStrategy: "UseIP",
+				})
+				return ret
+			}(),
+			StreamSettings: &model.StreamSettingsObject{
+				Sockopt: &model.StreamSettingsObject_SockoptObject{
+					Mark: 255,
+				},
+			},
+			Tag: directOut,
+		}, {
+			Protocol: "dns",
+			Tag:      dnsOut,
+			StreamSettings: &model.StreamSettingsObject{
+				Sockopt: &model.StreamSettingsObject_SockoptObject{
+					Mark: 255,
+				},
+			},
 		}},
 		Api: &model.ApiObject{
-			Tag: "api-out",
+			Tag: apiOut,
 			Services: []string{
 				"StatsService",
 				"AppService",
 				"LoggerService",
 			},
 		},
+		Dns: &model.DnsObject{
+			Servers: []*model.DnsObject_ServerObject{{
+				Address: "8.8.8.8",
+			}, {
+				Address: "1.1.1.1",
+			}, {
+				Address: "114.114.114.114",
+			}, {
+				Address: "223.5.5.5",
+				Port:    53,
+				Domains: []string{"geosite:cn"},
+			}},
+		},
 		Routing: &model.RoutingObject{
 			Rules: []*model.RoutingObject_RuleObject{{
 				Type:        "field",
-				InboundTag:  []string{"api-in"},
-				OutboundTag: "api-out",
+				InboundTag:  []string{apiIn},
+				OutboundTag: apiOut,
+			}, {
+				Type:        "field",
+				InboundTag:  []string{transparentIn},
+				Port:        53,
+				Network:     "udp",
+				OutboundTag: dnsOut,
+			}, {
+				Type:        "field",
+				Ip:          []string{"8.8.8.8", "1.1.1.1"},
+				OutboundTag: proxyOut,
+			}, {
+				Type:        "field",
+				Ip:          []string{"223.5.5.5", "114.114.114.114", "geoip:cn", "geosite:cn"},
+				OutboundTag: directOut,
 			}},
 		},
 		Log: &model.LogObject{

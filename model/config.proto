@@ -50,7 +50,7 @@ message RoutingObject {
     message RuleObject {
         repeated string domain = 1;
         repeated string ip = 2;
-        string port = 3;
+        uint32 port = 3;
         string network = 4;
         repeated string source = 5;
         repeated string inboundTag = 6;
@@ -81,7 +81,7 @@ message DnsObject {
     }
 
     map<string, string> hosts = 1;
-    repeated google.protobuf.Any servers = 2; // string | ServerObject
+    repeated ServerObject servers = 2;
     string clientIp = 3;
     string tag = 4;
 }
