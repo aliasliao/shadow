@@ -449,8 +449,17 @@ func ssToConfig(sss []*Shadowsocks, options *options) *model.Config {
 				Ip:          []string{"8.8.8.8", "1.1.1.1"},
 				OutboundTag: proxyOut,
 			}, {
+				Type: "field",
+				Ip: []string{
+					"223.5.5.5",
+					"114.114.114.114",
+					"geoip:private",
+					"geoip:cn",
+				},
+				OutboundTag: directOut,
+			}, {
 				Type:        "field",
-				Ip:          []string{"223.5.5.5", "114.114.114.114", "geoip:cn", "geosite:cn"},
+				Domain:      []string{"geosite:cn"},
 				OutboundTag: directOut,
 			}},
 		},
