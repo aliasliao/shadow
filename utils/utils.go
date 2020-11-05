@@ -334,7 +334,6 @@ func ssToConfig(sss []*Shadowsocks, options *options) *model.Config {
 
 	config := &model.Config{
 		Inbounds: []*model.InboundObject{{
-			Listen:   "127.0.0.1",
 			Port:     1080,
 			Protocol: "dokodemo-door",
 			Settings: func() *any.Any {
@@ -355,7 +354,6 @@ func ssToConfig(sss []*Shadowsocks, options *options) *model.Config {
 				DestOverride: []string{"http", "tls"},
 			},
 		}, {
-			Listen:   "127.0.0.1",
 			Port:     1081,
 			Protocol: "socks",
 			Tag:      socksIn,
@@ -364,7 +362,6 @@ func ssToConfig(sss []*Shadowsocks, options *options) *model.Config {
 				DestOverride: []string{"http", "tls"},
 			},
 		}, {
-			Listen:   "127.0.0.1",
 			Port:     8080,
 			Protocol: "dokodemo-door",
 			Settings: func() *any.Any {
