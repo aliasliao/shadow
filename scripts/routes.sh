@@ -12,7 +12,7 @@ if [ "$1" = "set" ]; then
   iptables -t mangle -A V2RAY -d 169.254.0.0/16 -j RETURN
   iptables -t mangle -A V2RAY -d 172.16.0.0/12 -j RETURN
   iptables -t mangle -A V2RAY -d 192.168.0.0/16 -p udp ! --dport 53 -j RETURN
-  iptables -t mangle -A V2RAY -d 192.168.0.0/16 -j RETURN
+  iptables -t mangle -A V2RAY -d 192.168.0.0/16 -p tcp -j RETURN
   iptables -t mangle -A V2RAY -d 224.0.0.0/4 -j RETURN
   iptables -t mangle -A V2RAY -d 240.0.0.0/4 -j RETURN
   # redirect all other packets to v2ray

@@ -372,6 +372,8 @@ func ssToConfig(sss []*Shadowsocks, options *options) *model.Config {
 			}(),
 			Tag: apiIn,
 		}},
+
+		// /////////////////////////////
 		Outbounds: []*model.OutboundObject{{
 			Protocol: "shadowsocks",
 			Settings: func() *any.Any {
@@ -409,6 +411,8 @@ func ssToConfig(sss []*Shadowsocks, options *options) *model.Config {
 				},
 			},
 		}},
+
+		// /////////////////////////////
 		Api: &model.ApiObject{
 			Tag: apiOut,
 			Services: []string{
@@ -417,7 +421,12 @@ func ssToConfig(sss []*Shadowsocks, options *options) *model.Config {
 				"LoggerService",
 			},
 		},
+
+		// /////////////////////////////
 		Dns: &model.DnsObject{
+			Hosts: map[string]string{
+				"router.asus.com": "192.168.50.1",
+			},
 			Servers: []*model.DnsObject_ServerObject{{
 				Address: "8.8.8.8",
 			}, {
@@ -427,9 +436,17 @@ func ssToConfig(sss []*Shadowsocks, options *options) *model.Config {
 			}, {
 				Address: "223.5.5.5",
 				Port:    53,
-				Domains: []string{"geosite:cn"},
+				Domains: func() []string {
+					var ret []string
+					for _, ss := range sss {
+						ret = append(ret, ss.server)
+					}
+					return append(ret, "geosite:cn")
+				}(),
 			}},
 		},
+
+		// /////////////////////////////
 		Routing: &model.RoutingObject{
 			Rules: []*model.RoutingObject_RuleObject{{
 				Type:        "field",
@@ -460,6 +477,8 @@ func ssToConfig(sss []*Shadowsocks, options *options) *model.Config {
 				OutboundTag: directOut,
 			}},
 		},
+
+		// /////////////////////////////
 		Log: &model.LogObject{
 			Access:   "none",
 			Error:    "./v2ray.log",
