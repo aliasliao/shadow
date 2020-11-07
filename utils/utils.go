@@ -323,37 +323,19 @@ func ssToConfig(sss []*Shadowsocks, options *options) *model.Config {
 	}
 
 	const (
-		transparentIn string = "transparent-in"
-		socksIn              = "socks-in"
-		apiIn                = "api-in"
-		dnsOut               = "dns-out"
-		apiOut               = "api-out"
-		directOut            = "direct-out"
-		proxyOut             = "proxy-out"
+		transparentTcpIn string = "transparent-tcp-in"
+		transparentUdpIn string = "transparent-udp-in"
+		socksIn                 = "socks-in"
+		apiIn                   = "api-in"
+
+		dnsOut    = "dns-out"
+		apiOut    = "api-out"
+		directOut = "direct-out"
+		proxyOut  = "proxy-out"
 	)
 
 	config := &model.Config{
 		Inbounds: []*model.InboundObject{{
-			Port:     1080,
-			Protocol: "dokodemo-door",
-			Settings: func() *any.Any {
-				ret, _ := ptypes.MarshalAny(&model.DokodemoInboundConfigurationObject{
-					Network:        "tcp,udp",
-					FollowRedirect: true,
-				})
-				return ret
-			}(),
-			StreamSettings: &model.StreamSettingsObject{
-				Sockopt: &model.StreamSettingsObject_SockoptObject{
-					Tproxy: "tproxy",
-				},
-			},
-			Tag: transparentIn,
-			Sniffing: &model.InboundObject_SniffingObject{
-				Enabled:      true,
-				DestOverride: []string{"http", "tls"},
-			},
-		}, {
 			Port:     1081,
 			Protocol: "socks",
 			Tag:      socksIn,
@@ -371,6 +353,46 @@ func ssToConfig(sss []*Shadowsocks, options *options) *model.Config {
 				return ret
 			}(),
 			Tag: apiIn,
+		}, {
+			Port:     8081,
+			Protocol: "dokodemo-door",
+			Settings: func() *any.Any {
+				ret, _ := ptypes.MarshalAny(&model.DokodemoInboundConfigurationObject{
+					Network:        "tcp,udp",
+					FollowRedirect: true,
+				})
+				return ret
+			}(),
+			StreamSettings: &model.StreamSettingsObject{
+				Sockopt: &model.StreamSettingsObject_SockoptObject{
+					Tproxy: "redirect",
+				},
+			},
+			Tag: transparentTcpIn,
+			Sniffing: &model.InboundObject_SniffingObject{
+				Enabled:      true,
+				DestOverride: []string{"http", "tls"},
+			},
+		}, {
+			Port:     8082,
+			Protocol: "dokodemo-door",
+			Settings: func() *any.Any {
+				ret, _ := ptypes.MarshalAny(&model.DokodemoInboundConfigurationObject{
+					Network:        "tcp,udp",
+					FollowRedirect: true,
+				})
+				return ret
+			}(),
+			StreamSettings: &model.StreamSettingsObject{
+				Sockopt: &model.StreamSettingsObject_SockoptObject{
+					Tproxy: "tproxy",
+				},
+			},
+			Tag: transparentUdpIn,
+			Sniffing: &model.InboundObject_SniffingObject{
+				Enabled:      true,
+				DestOverride: []string{"http", "tls"},
+			},
 		}},
 
 		// /////////////////////////////
@@ -392,7 +414,7 @@ func ssToConfig(sss []*Shadowsocks, options *options) *model.Config {
 			Protocol: "freedom",
 			Settings: func() *any.Any {
 				ret, _ := ptypes.MarshalAny(&model.FreedomOutboundConfigurationObject{
-					DomainStrategy: "UseIP",
+					DomainStrategy: "AsIs", // disable dns-out
 				})
 				return ret
 			}(),
@@ -454,7 +476,7 @@ func ssToConfig(sss []*Shadowsocks, options *options) *model.Config {
 				OutboundTag: apiOut,
 			}, {
 				Type:        "field",
-				InboundTag:  []string{transparentIn},
+				InboundTag:  []string{transparentUdpIn},
 				Port:        53,
 				Network:     "udp",
 				OutboundTag: dnsOut,
@@ -472,8 +494,11 @@ func ssToConfig(sss []*Shadowsocks, options *options) *model.Config {
 				},
 				OutboundTag: directOut,
 			}, {
-				Type:        "field",
-				Domain:      []string{"geosite:cn"},
+				Type: "field",
+				Domain: []string{
+					"router.asus.com", // TODO: remove
+					"geosite:cn",
+				},
 				OutboundTag: directOut,
 			}},
 		},
