@@ -323,10 +323,9 @@ func ssToConfig(sss []*Shadowsocks, options *options) *model.Config {
 	}
 
 	const (
-		transparentTcpIn string = "transparent-tcp-in"
-		transparentUdpIn string = "transparent-udp-in"
-		socksIn                 = "socks-in"
-		apiIn                   = "api-in"
+		transparentIn string = "transparent-in"
+		socksIn              = "socks-in"
+		apiIn                = "api-in"
 
 		dnsOut    = "dns-out"
 		apiOut    = "api-out"
@@ -365,30 +364,10 @@ func ssToConfig(sss []*Shadowsocks, options *options) *model.Config {
 			}(),
 			StreamSettings: &model.StreamSettingsObject{
 				Sockopt: &model.StreamSettingsObject_SockoptObject{
-					Tproxy: "redirect",
-				},
-			},
-			Tag: transparentTcpIn,
-			Sniffing: &model.InboundObject_SniffingObject{
-				Enabled:      true,
-				DestOverride: []string{"http", "tls"},
-			},
-		}, {
-			Port:     8082,
-			Protocol: "dokodemo-door",
-			Settings: func() *any.Any {
-				ret, _ := ptypes.MarshalAny(&model.DokodemoInboundConfigurationObject{
-					Network:        "tcp,udp",
-					FollowRedirect: true,
-				})
-				return ret
-			}(),
-			StreamSettings: &model.StreamSettingsObject{
-				Sockopt: &model.StreamSettingsObject_SockoptObject{
 					Tproxy: "tproxy",
 				},
 			},
-			Tag: transparentUdpIn,
+			Tag: transparentIn,
 			Sniffing: &model.InboundObject_SniffingObject{
 				Enabled:      true,
 				DestOverride: []string{"http", "tls"},
@@ -476,7 +455,7 @@ func ssToConfig(sss []*Shadowsocks, options *options) *model.Config {
 				OutboundTag: apiOut,
 			}, {
 				Type:        "field",
-				InboundTag:  []string{transparentUdpIn},
+				InboundTag:  []string{transparentIn},
 				Port:        53,
 				Network:     "udp",
 				OutboundTag: dnsOut,
