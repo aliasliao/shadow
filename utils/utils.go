@@ -473,10 +473,13 @@ func ssToConfig(sss []*Shadowsocks, options *options) *model.Config {
 				OutboundTag: directOut,
 			}, {
 				Type: "field",
-				Domain: []string{
-					// "router.asus.com", // TODO: remove
-					"geosite:cn",
-				},
+				Domain: func() []string {
+					var ret []string
+					for _, ss := range sss {
+						ret = append(ret, ss.server)
+					}
+					return append(ret, "geosite:cn")
+				}(),
 				OutboundTag: directOut,
 			}},
 		},
