@@ -345,16 +345,17 @@ func ssToConfig(sss []*Shadowsocks, options *options) *model.Config {
 		}, {
 			Port:     8080,
 			Protocol: "dokodemo-door",
+			Tag:      apiIn,
 			Settings: func() *any.Any {
 				ret, _ := ptypes.MarshalAny(&model.DokodemoInboundConfigurationObject{
 					Address: "127.0.0.1",
 				})
 				return ret
 			}(),
-			Tag: apiIn,
 		}, {
 			Port:     8081,
 			Protocol: "dokodemo-door",
+			Tag:      transparentIn,
 			Settings: func() *any.Any {
 				ret, _ := ptypes.MarshalAny(&model.DokodemoInboundConfigurationObject{
 					Network:        "tcp,udp",
@@ -367,7 +368,6 @@ func ssToConfig(sss []*Shadowsocks, options *options) *model.Config {
 					Tproxy: "tproxy",
 				},
 			},
-			Tag: transparentIn,
 			Sniffing: &model.InboundObject_SniffingObject{
 				Enabled:      true,
 				DestOverride: []string{"http", "tls"},
@@ -377,6 +377,7 @@ func ssToConfig(sss []*Shadowsocks, options *options) *model.Config {
 		// /////////////////////////////
 		Outbounds: []*model.OutboundObject{{
 			Protocol: "shadowsocks",
+			Tag:      proxyOut,
 			Settings: func() *any.Any {
 				ret, _ := ptypes.MarshalAny(&model.ShadowsocksOutboundConfigurationObject{
 					Servers: servers,
@@ -388,12 +389,12 @@ func ssToConfig(sss []*Shadowsocks, options *options) *model.Config {
 					Mark: 255,
 				},
 			},
-			Tag: proxyOut,
 		}, {
 			Protocol: "freedom",
+			Tag:      directOut,
 			Settings: func() *any.Any {
 				ret, _ := ptypes.MarshalAny(&model.FreedomOutboundConfigurationObject{
-					DomainStrategy: "AsIs", // disable dns-out
+					DomainStrategy: "UseIP",
 				})
 				return ret
 			}(),
@@ -402,7 +403,6 @@ func ssToConfig(sss []*Shadowsocks, options *options) *model.Config {
 					Mark: 255,
 				},
 			},
-			Tag: directOut,
 		}, {
 			Protocol: "dns",
 			Tag:      dnsOut,
@@ -457,7 +457,6 @@ func ssToConfig(sss []*Shadowsocks, options *options) *model.Config {
 				Type:        "field",
 				InboundTag:  []string{transparentIn},
 				Port:        53,
-				Network:     "udp",
 				OutboundTag: dnsOut,
 			}, {
 				Type:        "field",
@@ -475,7 +474,7 @@ func ssToConfig(sss []*Shadowsocks, options *options) *model.Config {
 			}, {
 				Type: "field",
 				Domain: []string{
-					"router.asus.com", // TODO: remove
+					// "router.asus.com", // TODO: remove
 					"geosite:cn",
 				},
 				OutboundTag: directOut,
