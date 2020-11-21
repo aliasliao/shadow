@@ -1,6 +1,6 @@
 #!/bin/bash
 
-start_iptables() {
+set_iptables() {
   iptables -t mangle -N YUUKO
 
   iptables -t mangle -A YUUKO -d 0.0.0.0/8 -j RETURN
@@ -19,20 +19,42 @@ start_iptables() {
   iptables -t mangle -A PREROUTING -j YUUKO
 }
 
-stop_iptables() {
+unset_iptables() {
   iptables -t mangle -D PREROUTING -j YUUKO
   iptables -t mangle -F YUUKO
   iptables -t mangle -X YUUKO
 }
 
-start_iproute2() {
+set_route() {
     ip route add local default dev lo table 100
     ip rule  add fwmark 1             table 100
 }
 
-stop_iproute2() {
+unset_route() {
     ip rule  del   table 100 &>/dev/null
     ip route flush table 100 &>/dev/null
+}
+
+status() {
+    echo ""
+    echo "#####iptables#####"
+    iptables -vnL -t mangle
+    echo ""
+    echo "#####ip route#####"
+    ip route list table 100
+    echo ""
+    echo "#####ip rule#####"
+    ip rule list
+}
+
+start() {
+    set_iptables
+    set_route
+}
+
+stop() {
+    unset_iptables
+    unset_route
 }
 
 main() {
