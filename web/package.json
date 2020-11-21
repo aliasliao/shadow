@@ -4,8 +4,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "buildDev": "esbuild --define:process.env.NODE_ENV='development' --bundle --external:react --external:react-dom --outfile=output/index.js main.tsx",
-    "buildPro": "esbuild --define:process.env.NODE_ENV='production' --minify --bundle --external:react --external:react-dom --outfile=output/index.js main.tsx",
+    "buildDev": "npx esbuild --define:process.env.NODE_ENV='development' --bundle --external:react --external:react-dom --outfile=output/index.js main.tsx",
+    "buildPro": "npx esbuild --define:process.env.NODE_ENV='production' --minify --bundle --external:react --external:react-dom --outfile=output/index.js main.tsx",
     "deploy": "scp index.asp output/index.js admin@router.asus.com:/tmp/mnt/liao/shadow",
     "allDev": "npm run buildDev && npm run deploy",
     "allPro": "npm run buildPro && npm run deploy"
@@ -19,6 +19,7 @@
     "@types/react-dom": "^16.9.8",
     "classnames": "^2.2.6",
     "emotion": "^10.0.27",
+    "esbuild": "^0.8.12",
     "react": "^16.13.1",
     "react-dom": "^16.13.1"
   }
