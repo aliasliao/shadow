@@ -418,8 +418,7 @@ func ssToConfig(sss []*Shadowsocks, options *options) *model.Config {
 			Tag: apiOut,
 			Services: []string{
 				"StatsService",
-				"AppService",
-				"LoggerService",
+				"HandlerService",
 			},
 		},
 
