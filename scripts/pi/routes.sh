@@ -8,8 +8,7 @@ set_iptables() {
   iptables -t mangle -A YUUKO -d 127.0.0.0/8 -j RETURN
   iptables -t mangle -A YUUKO -d 169.254.0.0/16 -j RETURN
   iptables -t mangle -A YUUKO -d 172.16.0.0/12 -j RETURN
-  iptables -t mangle -A YUUKO -d 192.168.0.0/16 -p tcp -j RETURN
-  iptables -t mangle -A YUUKO -d 192.168.0.0/16 -p udp ! --dport 53 -j RETURN
+  iptables -t mangle -A YUUKO -d 192.168.0.0/16 -j RETURN
   iptables -t mangle -A YUUKO -d 224.0.0.0/4 -j RETURN
   iptables -t mangle -A YUUKO -d 240.0.0.0/4 -j RETURN
 

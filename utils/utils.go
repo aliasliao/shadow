@@ -327,7 +327,6 @@ func ssToConfig(sss []*Shadowsocks, options *options) *model.Config {
 		socksIn              = "socks-in"
 		apiIn                = "api-in"
 
-		dnsOut    = "dns-out"
 		apiOut    = "api-out"
 		directOut = "direct-out"
 		proxyOut  = "proxy-out"
@@ -403,14 +402,6 @@ func ssToConfig(sss []*Shadowsocks, options *options) *model.Config {
 					Mark: 255,
 				},
 			},
-		}, {
-			Protocol: "dns",
-			Tag:      dnsOut,
-			StreamSettings: &model.StreamSettingsObject{
-				Sockopt: &model.StreamSettingsObject_SockoptObject{
-					Mark: 255,
-				},
-			},
 		}},
 
 		// /////////////////////////////
@@ -423,49 +414,14 @@ func ssToConfig(sss []*Shadowsocks, options *options) *model.Config {
 		},
 
 		// /////////////////////////////
-		Dns: &model.DnsObject{
-			Hosts: map[string]string{
-				"router.asus.com": "192.168.50.1",
-			},
-			Servers: []*model.DnsObject_ServerObject{{
-				Address: "8.8.8.8",
-			}, {
-				Address: "1.1.1.1",
-			}, {
-				Address: "114.114.114.114",
-			}, {
-				Address: "223.5.5.5",
-				Port:    53,
-				Domains: func() []string {
-					var ret []string
-					for _, ss := range sss {
-						ret = append(ret, ss.server)
-					}
-					return append(ret, "geosite:cn")
-				}(),
-			}},
-		},
-
-		// /////////////////////////////
 		Routing: &model.RoutingObject{
 			Rules: []*model.RoutingObject_RuleObject{{
 				Type:        "field",
 				InboundTag:  []string{apiIn},
 				OutboundTag: apiOut,
 			}, {
-				Type:        "field",
-				InboundTag:  []string{transparentIn},
-				Port:        53,
-				OutboundTag: dnsOut,
-			}, {
-				Type:        "field",
-				Ip:          []string{"8.8.8.8", "1.1.1.1"},
-				OutboundTag: proxyOut,
-			}, {
 				Type: "field",
 				Ip: []string{
-					"223.5.5.5",
-					"114.114.114.114",
 					"geoip:private",
 					"geoip:cn",
 				},
