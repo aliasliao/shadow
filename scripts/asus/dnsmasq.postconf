@@ -1,0 +1,5 @@
+#!/bin/sh
+CONFIG=$1
+source /usr/sbin/helper.sh
+
+pc_delete "dhcp-option=lan,option6:23,[::]" $CONFIG
